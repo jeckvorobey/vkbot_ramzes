@@ -2,6 +2,9 @@
 
 namespace bot;
 
+use VK\Client\VKApiClient;
+use VK\Client\Enums\VKLanguage;
+
 class Bot
 {
     static $vk = null; //обьект VK API
@@ -15,6 +18,7 @@ class Bot
 
     public function __construct()
     {
+
         $this->data = json_decode(file_get_contents('php://input'), true);
         $this->type = $this->data['type'];
         $this->secret = $this->data['secret'];
@@ -52,12 +56,8 @@ class Bot
 
     public function init()
     {
-
-        use VK\Client\VKApiClient;
-        use VK\Client\Enums\VKLanguage;
-
-        if ($this->vk === null) {
-            $this->vk = new VKApiClient(VK_API_VERSION, VKLanguage::RUSSIAN);
+        if (self::$vk === null) {
+            self::$vk = new VKApiClient(VK_API_VERSION, VKLanguage::RUSSIAN);
         }
 
         $body = $this->data['object'];

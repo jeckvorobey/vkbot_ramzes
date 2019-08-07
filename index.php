@@ -4,9 +4,7 @@ use Unirest\Exception;
 
 require_once './vendor/autoload.php';
 
-if (!isset($_REQUEST)) {
-    exit;
-}
+if (!isset($_REQUEST)) exit;
 
 $bot = bot\Bot;
 
@@ -25,7 +23,7 @@ try {
                     'one_time' => false,
                     'buttons' => [
                         [
-                            $bot->getBtn(TYPE_TEXT, 'Проработать установку', COLOR_SECONDARY, CMD_INSTALLATION),
+                            $bot->getBtn(TYPE_TEXT, 'Проработать установку', COLOR_SECONDARY,   CMD_INSTALLATION),
                         ]
                     ]
                 ];
@@ -75,4 +73,4 @@ function myLog($str)
 {
     file_put_contents("php://stdout", "$str\n");
 }
-echo "OK";
+$bot->callbackOkResponse();
