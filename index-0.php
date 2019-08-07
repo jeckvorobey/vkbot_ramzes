@@ -1,32 +1,46 @@
 <?php
 
-use Unirest\Exception;
 
 require_once './vendor/autoload.php';
 
-if (!isset($_REQUEST)) {
+use VK\Client\VKApiClient;
+use VK\Client\Enums\VKLanguage;
+
+$json = file_get_contents('php://input');
+$data = json_decode($json, true);
+$type = $data['type'] ?? '';
+
+
+/**
+ * Вывод полученной строки в терминал
+ */
+function myLog($str)
+{
+    file_put_contents("php://stdout", "$str\n");
+}
+
+if ($type === 'confirmation') {
+    echo CALLBACK_API_CONFIRMATION_TOKEN;
     exit;
 }
-
-$bot = bot\Bot;
-
-if (strcmp($bot->getSecret(), VK_API_SECRET_KEY) !== 0) exit();
-
-try {
-    switch ($bot->getType()) {
-        case CALLBACK_API_EVENT_CONFIRMATION:
-            echo CALLBACK_API_CONFIRMATION_TOKEN;
-            break;
-        case CALLBACK_API_EVENT_MESSAGE_NEW;
-            $bot->init();
-
-            break;
-        default:
-    }
-} catch (Exception $e) {
-    myLog('Error' . $e->getCode() . ' ' . $e->getMessage());
+/**
+ * создание кнопки
+ */
+function getBtn($typeBtn, $label, $color, $payload = '')
+{
+    return [
+        'action' => [
+            'type' => $typeBtn,
+            'payload' => json_encode($payload, JSON_UNESCAPED_UNICODE),
+            'label' => $label
+        ],
+        'color' => $color
+    ];
 }
-
+/**
+ * Объект API VK
+ */
+$vk = new VKApiClient(VK_API_VERSION, VKLanguage::RUSSIAN);
 /**
  * формируем клавиатуру
  */
@@ -80,13 +94,27 @@ if ($type === 'message_new') {
         ];
         $msg = 'Тут описание какого-то меню, с новой раскладкой клавиатуры';
     }
+    /**
+     * обработка кнопки Пришли тайпинг
+     */
+    if ($payload === CMD_TYPING) {
+        try {
+            $response = $vk->messages()->setActivity(VK_API_ACCESS_TOKEN, [
+                'peer_id' => $userId,
+                'type' => 'typing'
+            ]);
+            $msg = null;
+        } catch (Exception $e) {
+            myLog('Error' . $e->getCode() . ' ' . $e->getMessage());
+        }
+    }
 
     // myLog($json);
     try {
         if ($msg !== null)
             $response = $vk->messages()->send(VK_API_ACCESS_TOKEN, [
                 'peer_id' => $userId,
-                'random_id' => rand(0, 9999999999),
+                'random_id' => rand(00000000000000000, 9999999999999999),
                 'message' => $msg,
                 'keyboard' => json_encode($kbd, JSON_UNESCAPED_UNICODE)
             ]);
@@ -94,11 +122,5 @@ if ($type === 'message_new') {
         myLog('Error' . $e->getCode() . ' ' . $e->getMessage());
     }
 }
-/**
- * Вывод полученной строки в терминал
- */
-function myLog($str)
-{
-    file_put_contents("php://stdout", "$str\n");
-}
+
 echo "OK";

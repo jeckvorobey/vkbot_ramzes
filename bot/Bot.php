@@ -9,14 +9,13 @@ class Bot
     private $data = []; //массив полученных данных от сервера
     private $type = ''; //тип входящего сообщения
     private $secret = ''; //секретный ключ пришедший от сервера
-    private $userID = ''; //ID пользователя 
+    private $userId = ''; //ID пользователя 
     private $text = ''; //текс входящего сообщения
     private $payload = ''; //дополнительная информация о кнопке
 
     public function __construct()
     {
-        $json = file_get_contents('php://input');
-        $this->data = json_decode($json, true);
+        $this->data = json_decode(file_get_contents('php://input'), true);
         $this->type = $this->data['type'];
         $this->secret = $this->data['secret'];
     }
@@ -43,7 +42,7 @@ class Bot
 
     public function getUserId()
     {
-        return $this->userID;
+        return $this->userId;
     }
 
     public function getText()
@@ -63,11 +62,22 @@ class Bot
 
         $body = $this->data['object'];
         if (!empty($body)) {
-            $this->userID = abs($body['from_id']) ?? $body['peer_id'];
+            $this->userId = abs($body['from_id']) ?? $body['peer_id'];
             $this->text = $body['text'] ?? '';
             $this->payload = $body['payload'] ?? '';
         }
     }
+    //отправка сообщения пользователю
+    public function send($msg, $kbd = [])
+    {
+        return self::$vk->messages()->send(VK_API_ACCESS_TOKEN, [
+            'peer_id' => $this->userId,
+            'random_id' => rand(0, 9999999999),
+            'message' => $msg,
+            'keyboard' => json_encode($kbd, JSON_UNESCAPED_UNICODE)
+        ]);
+    }
+
     public function callbackOkResponse()
     {
         self::callbackResponse('OK');

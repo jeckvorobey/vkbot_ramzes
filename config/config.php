@@ -12,10 +12,10 @@ const VK_API_VERSION = '5.101'; // Используемая версия API
 /**
  * цвета кнопок
  */
-const COLOR_POSITIVE = 'positive';
-const COLOR_NEGATIVE = 'negative';
-const COLOR_PRIMARY = 'primary';
-const COLOR_SECONDARY = 'secondary';
+const COLOR_POSITIVE = 'positive'; //зеленый
+const COLOR_NEGATIVE = 'negative'; //красный
+const COLOR_PRIMARY = 'primary'; //синий
+const COLOR_SECONDARY = 'secondary'; //прострачный
 
 /**
  * типы кнопок
@@ -23,8 +23,13 @@ const COLOR_SECONDARY = 'secondary';
 const TYPE_TEXT = 'text';
 
 /**
+ * индитификатор команд входящих текстовых сообщений
+ */
+const TEXT_INSTALLATION = 'проработать установку';
+const TEXT_START = 'Начать';
+
+/**
  * индитификатор команд кнопок
  */
-const CMD_ID = 'id';
-const CMD_NEXT = 'next';
-const CMD_TYPING = 'typing';
+const CMD_INSTALLATION = 'inst';
+const CMD_START = 'start';
