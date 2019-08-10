@@ -54,6 +54,11 @@ class Bot
         return $this->text;
     }
 
+    public function getPayload()
+    {
+        return $this->payload;
+    }
+
     public function init()
     {
         if (self::$vk === null) {
@@ -61,6 +66,7 @@ class Bot
         }
 
         $body = $this->data['object'];
+
         if (!empty($body)) {
             $this->userId = abs($body['from_id']) ?? $body['peer_id'];
             $this->text = $body['text'] ?? '';
@@ -70,7 +76,7 @@ class Bot
     //отправка сообщения пользователю
     public function send($msg, $kbd = [])
     {
-        return self::$vk->messages()->send(VK_API_ACCESS_TOKEN, [
+        self::$vk->messages()->send(VK_API_ACCESS_TOKEN, [
             'peer_id' => $this->userId,
             'random_id' => rand(0, 9999999999),
             'message' => $msg,
@@ -101,5 +107,10 @@ class Bot
             ],
             'color' => $color
         ];
+    }
+
+    function myLog($str)
+    {
+        file_put_contents("php://stdout", "$str\n");
     }
 }

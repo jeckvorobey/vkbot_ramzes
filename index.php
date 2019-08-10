@@ -1,14 +1,15 @@
 <?php
 
 use Unirest\Exception;
+use bot\Bot;
 
 require_once './vendor/autoload.php';
 
 if (!isset($_REQUEST)) exit;
 
-$bot = bot\Bot;
+$bot = new Bot;
 
-if (strcmp($bot->getSecret(), VK_API_SECRET_KEY) !== 0) exit();
+//if (strcmp($bot->getSecret(), VK_API_SECRET_KEY) !== 0) exit();
 
 try {
     switch ($bot->getType()) {
@@ -17,7 +18,7 @@ try {
             break;
         case CALLBACK_API_EVENT_MESSAGE_NEW;
             $bot->init();
-            if (CMD_START || TEXT_START) {
+            if ($bot->getPayload() === CMD_START || $bot->getText() === TEXT_START) {
                 $msg = WELCOME_MESSAGES;
                 $kbd = [
                     'one_time' => false,
@@ -27,6 +28,8 @@ try {
                         ]
                     ]
                 ];
+                $bot->send($msg, $kbd);
+                $bot->callbackOkResponse();
             }
 
             if (TEXT_INSTALLATION || CMD_INSTALLATION) {
@@ -65,12 +68,3 @@ try {
 //        ]
 //    ]
 //];
-
-/**
- * Вывод полученной строки в терминал
- */
-function myLog($str)
-{
-    file_put_contents("php://stdout", "$str\n");
-}
-$bot->callbackOkResponse();
