@@ -32,11 +32,11 @@ try {
                     ]
                 ];
                 $bot->send($msg, $kbd);
+                echo 'OK';
             }
 
             //если команда "Проработать установку"
             if (strcasecmp($bot->getPayload(), CMD_INSTALLATION) === 0 || strcasecmp($bot->getText(), TEXT_INSTALLATION) === 0) {
-                $bot->myLog($bot->getPayload());
                 $msg = 'Напиши мне свою негативную установку';
                 $bot->send($msg);
             }

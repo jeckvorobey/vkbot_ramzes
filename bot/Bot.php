@@ -22,6 +22,7 @@ class Bot
         $this->data = json_decode(file_get_contents('php://input'), true);
         $this->type = $this->data['type'];
         $this->secret = $this->data['secret'];
+        $this->myLog($this->data);
     }
 
     public function setMsg($msg)
@@ -76,6 +77,9 @@ class Bot
             $this->userId = abs($body['from_id']) ?? $body['peer_id'];
             $this->text = $body['text'] ?? '';
             $this->payload = $body['payload'] ?? '';
+            if ($this->payload) {
+                $this->payload = json_decode($this->payload, true);
+            }
         }
     }
     //отправка сообщения пользователю
@@ -86,7 +90,7 @@ class Bot
     {
         self::$vk->messages()->send(VK_API_ACCESS_TOKEN, [
             'peer_id' => $this->userId,
-            'random_id' => rand(0, 9999999999),
+            'random_id' => rand(1, 9),
             'message' => $msg,
             'keyboard' => json_encode($kbd, JSON_UNESCAPED_UNICODE)
         ]);
