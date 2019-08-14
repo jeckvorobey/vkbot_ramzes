@@ -4,12 +4,13 @@ use Unirest\Exception;
 use bot\Bot;
 
 require_once './vendor/autoload.php';
+include './config/response_text.php';
 
 if (!isset($_REQUEST)) exit;
 
 $bot = new Bot;
 
-//if (strcmp($bot->getSecret(), VK_API_SECRET_KEY) !== 0) exit();
+if ($bot->getSecret() !== VK_API_SECRET_KEY) exit();
 
 try {
     switch ($bot->getType()) {
@@ -18,10 +19,12 @@ try {
             break;
         case CALLBACK_API_EVENT_MESSAGE_NEW;
             $bot->init();
-            if ($bot->getPayload() === CMD_START || $bot->getText() === TEXT_START) {
-                $msg = WELCOME_MESSAGES;
+
+            //Если команда "начать"
+            if (strcasecmp($bot->getPayload(), CMD_START) === 0 || strcasecmp($bot->getText(), TEXT_START) === 0) {
+                $msg = $text['welcome_messages'];
                 $kbd = [
-                    'one_time' => false,
+                    'one_time' => true,
                     'buttons' => [
                         [
                             $bot->getBtn(TYPE_TEXT, 'Проработать установку', COLOR_SECONDARY,   CMD_INSTALLATION),
@@ -29,11 +32,13 @@ try {
                     ]
                 ];
                 $bot->send($msg, $kbd);
-                $bot->callbackOkResponse();
             }
 
-            if (TEXT_INSTALLATION || CMD_INSTALLATION) {
-                $msg = 'Напиши свою негативную установку';
+            //если команда "Проработать установку"
+            if (strcasecmp($bot->getPayload(), CMD_INSTALLATION) === 0 || strcasecmp($bot->getText(), TEXT_INSTALLATION) === 0) {
+                $bot->myLog($bot->getPayload());
+                $msg = 'Напиши мне свою негативную установку';
+                $bot->send($msg);
             }
             break;
         default:

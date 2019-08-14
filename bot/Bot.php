@@ -59,6 +59,11 @@ class Bot
         return $this->payload;
     }
 
+    public function getSecret()
+    {
+        return $this->secret;
+    }
+
     public function init()
     {
         if (self::$vk === null) {
@@ -74,7 +79,10 @@ class Bot
         }
     }
     //отправка сообщения пользователю
-    public function send($msg, $kbd = [])
+    public function send($msg, $kbd = [
+        'one_time' => true,
+        'buttons' => []
+    ])
     {
         self::$vk->messages()->send(VK_API_ACCESS_TOKEN, [
             'peer_id' => $this->userId,
@@ -111,6 +119,9 @@ class Bot
 
     function myLog($str)
     {
+        if (is_array($str)) {
+            $str = json_encode($str, JSON_UNESCAPED_UNICODE);
+        }
         file_put_contents("php://stdout", "$str\n");
     }
 }

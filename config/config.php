@@ -25,8 +25,9 @@ const TYPE_TEXT = 'text';
 /**
  * индитификатор команд входящих текстовых сообщений
  */
-const TEXT_INSTALLATION = 'проработать установку';
-const TEXT_START = 'Начать';
+const TEXT_START = 'начать';
+const TEXT_INSTALLATION = 'Проработать установку';
+
 
 /**
  * индитификатор команд кнопок
