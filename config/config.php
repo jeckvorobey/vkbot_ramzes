@@ -6,6 +6,8 @@ const VK_API_SECRET_KEY = 'lascaJWI46LKjbKHbkn455sc54KN5xk'; //секретны�
 
 const CALLBACK_API_EVENT_CONFIRMATION = 'confirmation'; // Тип события о подтверждении сервера
 const CALLBACK_API_EVENT_MESSAGE_NEW = 'message_new'; // Тип события о новом сообщении 
+const CALLBACK_API_EVENT_MESSAGE_REPLY = 'message_reply'; //тип события о отправленном сообщениии
+
 const VK_API_ENDPOINT = 'https://api.vk.com/method/'; // Адрес обращения к API 
 const VK_API_VERSION = '5.101'; // Используемая версия API 
 
@@ -32,5 +34,6 @@ const TEXT_INSTALLATION = 'Проработать установку';
 /**
  * индитификатор команд кнопок
  */
-const CMD_INSTALLATION = 'inst';
 const CMD_START = 'start';
+const CMD_INSTALLATION = 'inst';
+const CMD_SUB = 'submit';

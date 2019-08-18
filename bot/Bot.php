@@ -2,6 +2,7 @@
 
 namespace bot;
 
+use tidy;
 use VK\Client\VKApiClient;
 use VK\Client\Enums\VKLanguage;
 
@@ -15,6 +16,7 @@ class Bot
     private $userId = ''; //ID пользователя 
     private $text = ''; //текс входящего сообщения
     private $payload = ''; //дополнительная информация о кнопке
+    private $randomID; //Рандомный ID исходящего сообщения
 
     public function __construct()
     {
@@ -81,6 +83,8 @@ class Bot
                 $this->payload = json_decode($this->payload, true);
             }
         }
+
+        //if ($this->randomID === $body['random_id']) exit();
     }
     //отправка сообщения пользователю
     public function send($msg, $kbd = [
@@ -88,12 +92,14 @@ class Bot
         'buttons' => []
     ])
     {
+        $this->randomID = rand(111111111, 999999999);
         self::$vk->messages()->send(VK_API_ACCESS_TOKEN, [
             'peer_id' => $this->userId,
-            'random_id' => rand(1, 9),
+            'random_id' => $this->randomID,
             'message' => $msg,
             'keyboard' => json_encode($kbd, JSON_UNESCAPED_UNICODE)
         ]);
+        $this->callbackOkResponse();
     }
 
     public function callbackOkResponse()

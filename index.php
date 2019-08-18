@@ -6,7 +6,10 @@ use bot\Bot;
 require_once './vendor/autoload.php';
 include './config/response_text.php';
 
-if (!isset($_REQUEST)) exit;
+if (!isset($_REQUEST)) {
+    echo 'OK';
+    exit;
+}
 
 $bot = new Bot;
 
@@ -15,11 +18,13 @@ if ($bot->getSecret() !== VK_API_SECRET_KEY) exit();
 try {
     switch ($bot->getType()) {
         case CALLBACK_API_EVENT_CONFIRMATION:
+
             echo CALLBACK_API_CONFIRMATION_TOKEN;
             break;
-        case CALLBACK_API_EVENT_MESSAGE_NEW;
-            $bot->init();
 
+        case CALLBACK_API_EVENT_MESSAGE_NEW;
+
+            $bot->init();
             //Если команда "начать"
             if (strcasecmp($bot->getPayload(), CMD_START) === 0 || strcasecmp($bot->getText(), TEXT_START) === 0) {
                 $msg = $text['welcome_messages'];
@@ -27,20 +32,31 @@ try {
                     'one_time' => true,
                     'buttons' => [
                         [
-                            $bot->getBtn(TYPE_TEXT, 'Проработать установку', COLOR_SECONDARY,   CMD_INSTALLATION),
+                            $bot->getBtn(TYPE_TEXT, 'Проработать установку', COLOR_SECONDARY, CMD_INSTALLATION),
                         ]
                     ]
                 ];
                 $bot->send($msg, $kbd);
-                echo 'OK';
             }
 
             //если команда "Проработать установку"
             if (strcasecmp($bot->getPayload(), CMD_INSTALLATION) === 0 || strcasecmp($bot->getText(), TEXT_INSTALLATION) === 0) {
-                $msg = 'Напиши мне свою негативную установку';
+                $msg = $text['inefficient_installation'];
+                $kbd = [
+                    'one_time' => true,
+                    'buttons' => [
+                        [
+                            $bot->getBtn(TYPE_TEXT, 'Отправить', COLOR_POSITIVE, CMD_SUB),
+                        ]
+                    ]
+                ];
                 $bot->send($msg);
             }
-            break;
+
+            // case CALLBACK_API_EVENT_MESSAGE_REPLY:
+            //     $bot->init();
+            //     break;
+
         default:
             $bot->init();
             $msg = 'Я такой команды не знаю';
@@ -56,20 +72,3 @@ try {
 } catch (Exception $e) {
     myLog('Error' . $e->getCode() . ' ' . $e->getMessage());
 }
-
-/**
- * формируем клавиатуру
- */
-//$kbd = [
-//    'one_time' => false,
-//    'buttons' => [
-//        [
-//            getBtn(TYPE_TEXT, 'Показать мой ID', COLOR_SECONDARY, CMD_ID),
-//            getBtn(TYPE_TEXT, 'Еще...', COLOR_PRIMARY, CMD_NEXT)
-//        ],
-//        [
-//            getBtn(TYPE_TEXT, 'OK', COLOR_POSITIVE),
-//            getBtn(TYPE_TEXT, 'Отмена', COLOR_NEGATIVE)
-//        ]
-//    ]
-//];
