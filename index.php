@@ -23,7 +23,6 @@ try {
             break;
 
         case CALLBACK_API_EVENT_MESSAGE_NEW;
-
             $bot->init();
             //Если команда "начать"
             if (strcasecmp($bot->getPayload(), CMD_START) === 0 || strcasecmp($bot->getText(), TEXT_START) === 0) {
@@ -44,18 +43,19 @@ try {
                 $msg = $text['inefficient_installation'];
                 $kbd = [
                     'one_time' => true,
-                    'buttons' => [
-                        [
-                            $bot->getBtn(TYPE_TEXT, 'Отправить', COLOR_POSITIVE, CMD_SUB),
-                        ]
-                    ]
+                    'buttons' => []
                 ];
-                $bot->send($msg);
+                $bot->send($msg, $kbd);
             }
 
-            // case CALLBACK_API_EVENT_MESSAGE_REPLY:
-            //     $bot->init();
-            //     break;
+            if ($_SESSION['change'] === 1) {
+                $msg = 'Обработка текста: ' . $bot->getText();
+                $kbd = [
+                    'one_time' => false,
+                    'buttons' => []
+                ];
+                $bot->send($msg, $kbd);
+            }
 
         default:
             $bot->init();

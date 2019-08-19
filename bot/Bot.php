@@ -88,7 +88,7 @@ class Bot
     }
     //отправка сообщения пользователю
     public function send($msg, $kbd = [
-        'one_time' => true,
+        'one_time' => false,
         'buttons' => []
     ])
     {
