@@ -24,6 +24,10 @@ try {
 
         case CALLBACK_API_EVENT_MESSAGE_NEW;
             $bot->init();
+
+            if (file_exists($bot->getUserId() . '.txt')) {
+                $file = file_get_contents($bot->getUserId() . '.txt');
+            }
             //Если команда "начать"
             if (strcasecmp($bot->getPayload(), CMD_START) === 0 || strcasecmp($bot->getText(), TEXT_START) === 0) {
                 $msg = $text['welcome_messages'];
@@ -35,6 +39,7 @@ try {
                         ]
                     ]
                 ];
+                file_put_contents($bot->getUserId() . '.txt', 0);
                 $bot->send($msg, $kbd);
             }
 
@@ -45,17 +50,48 @@ try {
                     'one_time' => true,
                     'buttons' => []
                 ];
+                file_put_contents($bot->getUserId() . '.txt', 1);
+                $bot->send($msg, $kbd);
+            }
+            //обработка неэффективной установки
+            if ($file === '1') {
+                $resText = $text['res_to_inefficient_installation'];
+                $inst = $bot->getText();
+                $trans = '1textchange1';
+                $msg = str_replace($trans, $inst, $resText);
+
+                $kbd = [
+                    'one_time' => false,
+                    'buttons' => [
+                        [
+                            $bot->getBtn(TYPE_TEXT, 'Перевернуть установку', COLOR_POSITIVE, CMD_FLIP),
+                        ]
+                    ]
+                ];
+                file_put_contents($bot->getUserId() . '.txt', 0);
                 $bot->send($msg, $kbd);
             }
 
-            if ($_SESSION['change'] === 1) {
-                $msg = 'Обработка текста: ' . $bot->getText();
+            //обработка кнопки "Перевернуть установку"
+            if (strcasecmp($bot->getPayload(), CMD_FLIP) === 0) {
+                $msg = 'Вот тут не понятно, человек сам должен написать перевернутую установку или бот должен ее перевернуть?';
+
                 $kbd = [
                     'one_time' => false,
-                    'buttons' => []
+                    'buttons' => [
+                        [
+                            $bot->getBtn(TYPE_TEXT, 'Следующая установка', COLOR_PRIMARY, CMD_INSTALLATION)
+                        ],
+                        [
+                            $bot->getBtn(TYPE_TEXT, 'Вернуться в начало', COLOR_SECONDARY, CMD_START)
+                        ]
+                    ]
                 ];
+                file_put_contents($bot->getUserId() . '.txt', 2);
                 $bot->send($msg, $kbd);
             }
+        case CALLBACK_API_EVENT_MESSAGE_REPLY:
+            $bot->callbackOkResponse();
 
         default:
             $bot->init();
@@ -64,7 +100,7 @@ try {
                 'one_time' => false,
                 'buttons' => [
                     [
-                        $bot->getBtn(TYPE_TEXT, 'Вернуться в начало', COLOR_PRIMARY, CMD_START),
+                        $bot->getBtn(TYPE_TEXT, 'Вернуться в начало', COLOR_PRIMARY, CMD_START)
                     ]
                 ]
             ];

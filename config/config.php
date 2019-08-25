@@ -17,7 +17,7 @@ const VK_API_VERSION = '5.101'; // Используемая версия API
 const COLOR_POSITIVE = 'positive'; //зеленый
 const COLOR_NEGATIVE = 'negative'; //красный
 const COLOR_PRIMARY = 'primary'; //синий
-const COLOR_SECONDARY = 'secondary'; //прострачный
+const COLOR_SECONDARY = 'secondary'; //прозрачный
 
 /**
  * типы кнопок
@@ -37,3 +37,4 @@ const TEXT_INSTALLATION = 'Проработать установку';
 const CMD_START = 'start';
 const CMD_INSTALLATION = 'inst';
 const CMD_SUB = 'submit';
+const CMD_FLIP = 'flip';
