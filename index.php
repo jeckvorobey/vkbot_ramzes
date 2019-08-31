@@ -2,6 +2,7 @@
 
 use Unirest\Exception;
 use bot\Bot;
+use api\YandexSpeechKit;
 
 require_once './vendor/autoload.php';
 include './config/response_text.php';
@@ -24,9 +25,9 @@ try {
 
         case CALLBACK_API_EVENT_MESSAGE_NEW;
             $bot->init();
-
-            if (file_exists($bot->getUserId() . '.txt')) {
-                $file = file_get_contents($bot->getUserId() . '.txt');
+            if (file_exists(STATUS_DIRECTORY . '/' . $bot->getUserId() . '.txt')) {
+                $status = $bot->status('get');
+                $bot->myLog(gettype($status));
             }
             //Если команда "начать"
             if (strcasecmp($bot->getPayload(), CMD_START) === 0 || strcasecmp($bot->getText(), TEXT_START) === 0) {
@@ -39,7 +40,7 @@ try {
                         ]
                     ]
                 ];
-                file_put_contents($bot->getUserId() . '.txt', 0);
+                $bot->status();
                 $bot->send($msg, $kbd);
             }
 
@@ -50,11 +51,11 @@ try {
                     'one_time' => true,
                     'buttons' => []
                 ];
-                file_put_contents($bot->getUserId() . '.txt', 1);
+                $bot->status('put', 1);
                 $bot->send($msg, $kbd);
             }
             //обработка неэффективной установки
-            if ($file === '1') {
+            if ($status === 1) {
                 $resText = $text['res_to_inefficient_installation'];
                 $inst = $bot->getText();
                 $trans = '1textchange1';
@@ -68,13 +69,23 @@ try {
                         ]
                     ]
                 ];
-                file_put_contents($bot->getUserId() . '.txt', 0);
+                $bot->status();
                 $bot->send($msg, $kbd);
             }
 
             //обработка кнопки "Перевернуть установку"
             if (strcasecmp($bot->getPayload(), CMD_FLIP) === 0) {
-                $msg = 'Вот тут не понятно, человек сам должен написать перевернутую установку или бот должен ее перевернуть?';
+                $msg = $text['effective_installation'];
+                $bot->status('put', 2);
+                $bot->send($msg);
+            }
+
+            //обработка эффективной установки
+            if ($status === 2) {
+                $resText = $text['res_to_effective_installation'];
+                $inst = $bot->getText();
+                $trans = '1textchange1';
+                $msg = str_replace($trans, $inst, $resText);
 
                 $kbd = [
                     'one_time' => false,
@@ -87,7 +98,7 @@ try {
                         ]
                     ]
                 ];
-                file_put_contents($bot->getUserId() . '.txt', 2);
+                $bot->status();
                 $bot->send($msg, $kbd);
             }
         case CALLBACK_API_EVENT_MESSAGE_REPLY:

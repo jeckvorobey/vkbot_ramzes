@@ -101,6 +101,22 @@ class Bot
         ]);
         $this->callbackOkResponse();
     }
+    /**
+     * сохранение статуса диалога
+     * по умолчанию метод записывает файл со статусом 0
+     */
+    public function status($method = 'put', $status = 0)
+    {
+        if ($method === 'get') {
+            $status = (int) file_get_contents(STATUS_DIRECTORY . '/' . $this->userId . '.txt');
+            return $status;
+        }
+
+        if ($method === 'put') {
+            return file_put_contents(STATUS_DIRECTORY . '/' . $this->userId . '.txt', $status);
+        }
+    }
+
 
     public function callbackOkResponse()
     {
