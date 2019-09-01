@@ -8,7 +8,7 @@ use VK\Client\Enums\VKLanguage;
 
 class Bot
 {
-    static $vk = null; //обьект VK API
+    static $vk = ''; //обьект VK API
     private $msg = '';  //текст сообщения
     private $data = []; //массив полученных данных от сервера
     private $type = ''; //тип входящего сообщения
@@ -69,9 +69,7 @@ class Bot
 
     public function init()
     {
-        if (self::$vk === null) {
-            self::$vk = new VKApiClient(VK_API_VERSION, VKLanguage::RUSSIAN);
-        }
+        self::$vk = new VKApiClient(VK_API_VERSION, VKLanguage::RUSSIAN);
 
         $body = $this->data['object'];
 
@@ -101,9 +99,56 @@ class Bot
         ]);
         $this->callbackOkResponse();
     }
+    //Получет адрес сервера для загрузки аудиосообщения
+    public function uploadServer()
+    {
+        $uploadUrl = self::$vk->docs()->getMessagesUploadServer(
+            VK_API_ACCESS_TOKEN,
+            [
+                'type' => 'audio_message',
+                'peer_id' => $this->userId
+            ]
+        );
+
+        return $uploadUrl['upload_url'];
+    }
+
+    //загрузка аудиоответа на сервер VK
+    public function getAudioVk($url, $audioFile)
+    {
+        $ch = curl_init($url);
+
+        curl_setopt($ch, CURLOPT_AUTOREFERER, TRUE);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, TRUE);
+        curl_setopt($ch, CURLOPT_HEADER, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+
+        if ($audioFile !== false) {
+            curl_setopt($ch, CURLOPT_POST, 1);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $audioFile);
+        }
+        $response = curl_exec($ch);
+
+        if (curl_errno($ch)) {
+            $this->myLog("Error: " . curl_error($ch));
+        }
+        if (curl_getinfo($ch, CURLINFO_HTTP_CODE) != 200) {
+            $decodedResponse = json_decode($response, true);
+            $this->myLog("Error code: " . $decodedResponse["error_code"] . "\r\n");
+            $this->myLog("Error message: " . $decodedResponse["error_message"] . "\r\n");
+        } else {
+            //возвращаем строку ответа сервера
+        }
+
+        curl_close($ch);
+    }
     /**
      * сохранение статуса диалога
      * по умолчанию метод записывает файл со статусом 0
+     * @string 'put' записывает файл
+     * @string 'get' получает статус
      */
     public function status($method = 'put', $status = 0)
     {

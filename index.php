@@ -1,8 +1,8 @@
 <?php
 
+use api\YandexApi;
 use Unirest\Exception;
 use bot\Bot;
-use api\YandexSpeechKit;
 
 require_once './vendor/autoload.php';
 include './config/response_text.php';
@@ -16,6 +16,8 @@ $bot = new Bot;
 
 if ($bot->getSecret() !== VK_API_SECRET_KEY) exit();
 
+$yandexApi = new YandexApi;
+
 try {
     switch ($bot->getType()) {
         case CALLBACK_API_EVENT_CONFIRMATION:
@@ -27,7 +29,6 @@ try {
             $bot->init();
             if (file_exists(STATUS_DIRECTORY . '/' . $bot->getUserId() . '.txt')) {
                 $status = $bot->status('get');
-                $bot->myLog(gettype($status));
             }
             //Если команда "начать"
             if (strcasecmp($bot->getPayload(), CMD_START) === 0 || strcasecmp($bot->getText(), TEXT_START) === 0) {
