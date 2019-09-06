@@ -33,6 +33,7 @@ try {
             //Если команда "начать"
             if (strcasecmp($bot->getPayload(), CMD_START) === 0 || strcasecmp($bot->getText(), TEXT_START) === 0) {
                 $msg = $text['welcome_messages'];
+
                 $kbd = [
                     'one_time' => true,
                     'buttons' => [
@@ -41,6 +42,8 @@ try {
                         ]
                     ]
                 ];
+
+
                 $bot->status();
                 $bot->send($msg, $kbd);
             }
@@ -57,11 +60,18 @@ try {
             }
             //обработка неэффективной установки
             if ($status === 1) {
+                //обработка текста
                 $resText = $text['res_to_inefficient_installation'];
                 $inst = $bot->getText();
                 $trans = '1textchange1';
                 $msg = str_replace($trans, $inst, $resText);
 
+                //создание аудио ответа
+                $file = $yandexApi->getVoice($msg);
+                $url = $bot->uploadServer();
+                $voice = $bot->setAudioVk($url, $file);
+                $voice = 'doc' . $voice['audio_message']['owner_id'] . '_' . $voice['audio_message']['id'] . '_' . $voice['audio_message']['access_key'];
+                $bot->myLog($voice);
                 $kbd = [
                     'one_time' => false,
                     'buttons' => [
@@ -71,7 +81,7 @@ try {
                     ]
                 ];
                 $bot->status();
-                $bot->send($msg, $kbd);
+                $bot->send($msg, $kbd, $voice);
             }
 
             //обработка кнопки "Перевернуть установку"
@@ -83,10 +93,17 @@ try {
 
             //обработка эффективной установки
             if ($status === 2) {
+                //обработка текста
                 $resText = $text['res_to_effective_installation'];
                 $inst = $bot->getText();
                 $trans = '1textchange1';
                 $msg = str_replace($trans, $inst, $resText);
+
+                //создание аудио ответа
+                $file = $yandexApi->getVoice($msg);
+                $url = $bot->uploadServer();
+                $voice = $bot->setAudioVk($url, $file);
+                $voice = 'doc' . $voice['audio_message']['owner_id'] . '_' . $voice['audio_message']['id'] . '_' . $voice['audio_message']['access_key'];
 
                 $kbd = [
                     'one_time' => false,
@@ -100,7 +117,7 @@ try {
                     ]
                 ];
                 $bot->status();
-                $bot->send($msg, $kbd);
+                $bot->send($msg, $kbd, $voice);
             }
         case CALLBACK_API_EVENT_MESSAGE_REPLY:
             $bot->callbackOkResponse();

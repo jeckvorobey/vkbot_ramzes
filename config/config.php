@@ -21,6 +21,10 @@ const CALLBACK_API_EVENT_MESSAGE_REPLY = 'message_reply'; //тип событи�
 
 const VK_API_ENDPOINT = 'https://api.vk.com/method/'; // Адрес обращения к API 
 const VK_API_VERSION = '5.101'; // Используемая версия API 
+/**
+ * mime type
+ */
+const OGG = 'audio/ogg';
 
 /**
  * базовые пути к файлам

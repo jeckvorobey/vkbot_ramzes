@@ -2,6 +2,7 @@
 
 namespace bot;
 
+use CURLFile;
 use tidy;
 use VK\Client\VKApiClient;
 use VK\Client\Enums\VKLanguage;
@@ -24,7 +25,7 @@ class Bot
         $this->data = json_decode(file_get_contents('php://input'), true);
         $this->type = $this->data['type'];
         $this->secret = $this->data['secret'];
-        $this->myLog($this->data);
+        // $this->myLog($this->data);
     }
 
     public function setMsg($msg)
@@ -88,12 +89,13 @@ class Bot
     public function send($msg, $kbd = [
         'one_time' => false,
         'buttons' => []
-    ])
+    ], $voice = '')
     {
-        $this->randomID = rand(111111111, 999999999);
+        $this->randomID = mt_rand(20, 999999999);
         self::$vk->messages()->send(VK_API_ACCESS_TOKEN, [
             'peer_id' => $this->userId,
             'random_id' => $this->randomID,
+            'attachment' => $voice,
             'message' => $msg,
             'keyboard' => json_encode($kbd, JSON_UNESCAPED_UNICODE)
         ]);
@@ -114,7 +116,7 @@ class Bot
     }
 
     //загрузка аудиоответа на сервер VK
-    public function getAudioVk($url, $audioFile)
+    public function setAudioVk($url, $audioFile)
     {
         $ch = curl_init($url);
 
@@ -124,10 +126,12 @@ class Bot
         curl_setopt($ch, CURLOPT_HEADER, false);
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-type: multipart/form-data;charset=utf-8']);
 
-        if ($audioFile !== false) {
+        if ($audioFile) {
+            $file['file'] = new CURLFile($audioFile, mime_content_type($audioFile), pathinfo($audioFile)['basename']);
             curl_setopt($ch, CURLOPT_POST, 1);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $audioFile);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $file);
         }
         $response = curl_exec($ch);
 
@@ -139,10 +143,13 @@ class Bot
             $this->myLog("Error code: " . $decodedResponse["error_code"] . "\r\n");
             $this->myLog("Error message: " . $decodedResponse["error_message"] . "\r\n");
         } else {
-            //возвращаем строку ответа сервера
+            $res = json_decode($response, true);
+            $data = self::$vk->docs()->save(VK_API_ACCESS_TOKEN, [
+                'file' => $res['file'],
+            ]);
+            $this->myLog($data);
+            return $data;
         }
-
-        curl_close($ch);
     }
     /**
      * сохранение статуса диалога
