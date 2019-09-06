@@ -4,8 +4,6 @@ namespace api;
 
 class YandexApi
 {
-    private $token = 'CggaATEVAgAAABKABHyv91anAF4Xc5sGvKq2BPwQbxD1J4LDN5EvrJuTa73piGLNH2xjWsuio3bGMsd_vWyMoYlykFD7WC2YfJi56CPV09NBfp7k5PDf-gwAasQZLLOewxRl-DJm--WWnpWckEmg6R3NCidFU2iZ7qJoWunHEqrplKu3gzbQSStr6tfwdQUCmk3s70MHTx9GHc8YP5GQdAPQMA1oTmIoH9TfMv3Z1PoqhkFETVQr6Xzjzl3CnhUhyEhgoBN9tditWZSnb4GzVaeg6Ql7GMViENJRFwr4Jx_n7-CqyenMgQjK62pXFRHYfAgr_bhT0yE0zyiiT_duC-oo5pt_fmdqJX4VSre0gW3YxlzabDJRMteh7eLXZa77fOjKAUHDO35jAnOfMkNOguz7WZ2hjIGBKPb8ENDm1-X7LavuQf_bmjzWCwyjpFWELwnw4Cgnv_69jGVYvayCBVkESLxmJUQp6uAsZeuMM8f01FJ9qzmtRSVb_uMIPDsnFfa2Mhiwr3oUVjCnP6QiGGJbPK15iWv-uB66WmgXZtt-RLuDKimSqNu-QBZD796-I3GibjMhyYDZnC12numJ4LRfCFYqXSXZkqDIFuQitlbLfbfopfsgcg5nvM8Si67eJ2HPEC_qj3BhVFYorjNemwzE5SGL364e_oKb5b28V7soVQkNvl-nSkmPcRgiGmUKIGE5MzYxMjA4NGZlZDQxYjBiZDRhM2I1ODI4ZGU4YzA4EIfDresFGMeUsOsFIiMKFGFqZWF0M2pqZGU0cWJsanRnNWVuEgtKZWNrVm9yb2JleVoAMAI4AUoIGgExFQIAAABQASD0BA';
-
     public function getVoice($text)
     {
         $audioFile = AUDIO_DIRECTORY . '/voice_' . md5($text) . '.ogg';
@@ -21,7 +19,7 @@ class YandexApi
             'folderId' => YANDEX_ID_CATALOG,
         ]);
 
-        $headers = ['Authorization: Bearer ' . $this->token];
+        $headers = ['Authorization: Api-Key ' . YANDEX_API_KEY];
 
         $ch = curl_init();
 
