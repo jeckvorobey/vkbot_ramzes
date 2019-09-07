@@ -61,17 +61,16 @@ try {
             //обработка неэффективной установки
             if ($status === 1) {
                 //обработка текста
-                $resText = $text['res_to_inefficient_installation'];
                 $inst = $bot->getText();
                 $trans = '1textchange1';
-                $msg = str_replace($trans, $inst, $resText);
-
+                $forSpeechText = str_replace($trans, str_replace(' ', ' - ', $inst), $text['res_to_inefficient_installation']);
+                $regArr = ['- ', '+о'];
+                $msg = str_replace($regArr, '', $forSpeechText);
                 //создание аудио ответа
-                $file = $yandexApi->getVoice($msg);
+                $file = $yandexApi->getVoice($forSpeechText);
                 $url = $bot->uploadServer();
                 $voice = $bot->setAudioVk($url, $file);
                 $voice = 'doc' . $voice['audio_message']['owner_id'] . '_' . $voice['audio_message']['id'] . '_' . $voice['audio_message']['access_key'];
-                $bot->myLog($voice);
                 $kbd = [
                     'one_time' => false,
                     'buttons' => [
@@ -94,13 +93,12 @@ try {
             //обработка эффективной установки
             if ($status === 2) {
                 //обработка текста
-                $resText = $text['res_to_effective_installation'];
                 $inst = $bot->getText();
                 $trans = '1textchange1';
-                $msg = str_replace($trans, $inst, $resText);
-
+                $forSpeechText = str_replace($trans, str_replace(' ', ' - ', $inst), $text['res_to_effective_installation']);
+                $msg = str_replace('- ', '', $forSpeechText);
                 //создание аудио ответа
-                $file = $yandexApi->getVoice($msg);
+                $file = $yandexApi->getVoice($forSpeechText);
                 $url = $bot->uploadServer();
                 $voice = $bot->setAudioVk($url, $file);
                 $voice = 'doc' . $voice['audio_message']['owner_id'] . '_' . $voice['audio_message']['id'] . '_' . $voice['audio_message']['access_key'];

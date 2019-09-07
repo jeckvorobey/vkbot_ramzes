@@ -8,8 +8,9 @@ const YANDEX_URL = 'https://tts.api.cloud.yandex.net/speech/v1/tts:synthesize';
  * настройки yandex speech kit
  */
 const YANDEX_LANG = 'ru-RU';
-const YANDEX_VOICE = 'zahar';
-const YANDEX_EMOTION = 'good';
+const YANDEX_VOICE = 'jane';
+const YNDEX_SPEED = 0.9;
+const YANDEX_EMOTION = 'neutral';
 //Ключи от API VK
 const CALLBACK_API_CONFIRMATION_TOKEN = 'c236625a'; // Строка, которую должен вернуть сервер 
 const VK_API_ACCESS_TOKEN = '05f22f63db3cd1a00033ed0d11645c7d90e9ee369934b57d14ac78fe564a1f3272487d4beed9911630e66'; // Ключ доступа сообщества 

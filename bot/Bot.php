@@ -147,7 +147,6 @@ class Bot
             $data = self::$vk->docs()->save(VK_API_ACCESS_TOKEN, [
                 'file' => $res['file'],
             ]);
-            $this->myLog($data);
             return $data;
         }
     }

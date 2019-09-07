@@ -14,6 +14,7 @@ class YandexApi
         $query = http_build_query([
             'text' => urldecode($text),
             'lang' => YANDEX_LANG,
+            'speed' => YNDEX_SPEED,
             'voice' => YANDEX_VOICE,
             'emotion' => YANDEX_EMOTION,
             'folderId' => YANDEX_ID_CATALOG,
