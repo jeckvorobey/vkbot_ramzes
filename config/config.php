@@ -60,6 +60,8 @@ const CMD_START = 'start';
 const CMD_INSTALLATION = 'inst';
 const CMD_SUB = 'submit';
 const CMD_FLIP = 'flip';
+const CMD_CLARIFY = 'clarify';
+const CMD_CLARIFY_EFFECT = 'clarifyEffect';
 
 /**
  * статусы разговора

@@ -49,7 +49,7 @@ try {
             }
 
             //если команда "Проработать установку"
-            if (strcasecmp($bot->getPayload(), CMD_INSTALLATION) === 0 || strcasecmp($bot->getText(), TEXT_INSTALLATION) === 0) {
+            if (strcasecmp($bot->getPayload(), CMD_INSTALLATION) === 0 || strcasecmp($bot->getText(), TEXT_INSTALLATION) === 0 || strcasecmp($bot->getPayload(), CMD_CLARIFY) === 0) {
                 $msg = $text['inefficient_installation'];
                 $kbd = [
                     'one_time' => true,
@@ -75,7 +75,10 @@ try {
                     'one_time' => false,
                     'buttons' => [
                         [
-                            $bot->getBtn(TYPE_TEXT, 'Перевернуть установку', COLOR_POSITIVE, CMD_FLIP),
+                            $bot->getBtn(TYPE_TEXT, 'Перевернуть установку', COLOR_POSITIVE, CMD_FLIP)
+                        ],
+                        [
+                            $bot->getBtn(TYPE_TEXT, 'Уточнить установку', COLOR_SECONDARY, CMD_CLARIFY)
                         ]
                     ]
                 ];
@@ -84,7 +87,7 @@ try {
             }
 
             //обработка кнопки "Перевернуть установку"
-            if (strcasecmp($bot->getPayload(), CMD_FLIP) === 0) {
+            if (strcasecmp($bot->getPayload(), CMD_FLIP) === 0 || strcasecmp($bot->getPayload(), CMD_CLARIFY_EFFECT) === 0) {
                 $msg = $text['effective_installation'];
                 $bot->status('put', 2);
                 $bot->send($msg);
@@ -107,10 +110,13 @@ try {
                     'one_time' => false,
                     'buttons' => [
                         [
-                            $bot->getBtn(TYPE_TEXT, 'Следующая установка', COLOR_PRIMARY, CMD_INSTALLATION)
+                            $bot->getBtn(TYPE_TEXT, 'Следующая установка', COLOR_POSITIVE, CMD_INSTALLATION)
                         ],
                         [
-                            $bot->getBtn(TYPE_TEXT, 'Вернуться в начало', COLOR_SECONDARY, CMD_START)
+                            $bot->getBtn(TYPE_TEXT, 'Уточнить установку', COLOR_SECONDARY, CMD_CLARIFY_EFFECT)
+                        ],
+                        [
+                            $bot->getBtn(TYPE_TEXT, 'Вернуться в начало', COLOR_PRIMARY, CMD_START)
                         ]
                     ]
                 ];
