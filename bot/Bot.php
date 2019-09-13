@@ -15,6 +15,8 @@ class Bot
     private $type = ''; //тип входящего сообщения
     private $secret = ''; //секретный ключ пришедший от сервера
     private $userId = ''; //ID пользователя
+    private $firstName = ''; //Имя пользователя
+    private $lastName = ''; //Фамилия пользователя
     private $text = ''; //текс входящего сообщения
     private $payload = ''; //дополнительная информация о кнопке
     private $randomID; //Рандомный ID исходящего сообщения
@@ -82,12 +84,19 @@ class Bot
             }
         }
 
-        //if ($this->randomID === $body['random_id']) exit();
+        $this->getUser(); //получает данные пользователя
     }
     //получает данные пользователя
     public function getUser()
     {
-        $user = self::vk->users()->get($this->userId);
+        $user = self::$vk->users()->get(VK_API_ACCESS_TOKEN, [
+            'user_ids' => $this->userId
+        ]);
+        $this->myLog(gettype($user));
+        if (!empty($user)) {
+            $this->firstName = $user[0]['first_name'] ?? '';
+            $this->lastName = $user[0]['last_name'] ?? '';
+        }
     }
 
     //отправка сообщения пользователю
@@ -211,8 +220,8 @@ class Bot
     {
         $text = "\n========================\n";
         $text .= date('Y-m-d H:i:s') . "\n";
-        $text .= 'текст сообщения: ';
-        $text .= $logText;
+        $text .= "Пользователь: " . $this->firstName . " " . $this->lastName . "\n";
+        $text .= "текст сообщения: " . $logText;
         file_put_contents(LOG_DIRECTORY . '/log_' . $this->userId . '.txt', $text, FILE_APPEND);
     }
 }

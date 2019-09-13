@@ -43,7 +43,6 @@ try {
                     ]
                 ];
 
-
                 $bot->status();
                 $bot->send($msg, $kbd);
             }
