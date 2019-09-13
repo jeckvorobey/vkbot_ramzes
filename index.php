@@ -62,6 +62,7 @@ try {
             if ($status === 1) {
                 //обработка текста
                 $inst = $bot->getText();
+                $bot->logFile($inst);
                 $trans = '1textchange1';
                 $forSpeechText = str_replace($trans, str_replace(' ', ' - ', $inst), $text['res_to_inefficient_installation']);
                 $regArr = ['- ', '+о'];
@@ -97,6 +98,7 @@ try {
             if ($status === 2) {
                 //обработка текста
                 $inst = $bot->getText();
+                $bot->logFile($inst);
                 $trans = '1textchange1';
                 $forSpeechText = str_replace($trans, str_replace(' ', ' - ', $inst), $text['res_to_effective_installation']);
                 $msg = str_replace('- ', '', $forSpeechText);

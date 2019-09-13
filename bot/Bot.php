@@ -9,19 +9,18 @@ use VK\Client\Enums\VKLanguage;
 
 class Bot
 {
-    static $vk = ''; //обьект VK API
+    public static $vk = ''; //обьект VK API
     private $msg = '';  //текст сообщения
     private $data = []; //массив полученных данных от сервера
     private $type = ''; //тип входящего сообщения
     private $secret = ''; //секретный ключ пришедший от сервера
-    private $userId = ''; //ID пользователя 
+    private $userId = ''; //ID пользователя
     private $text = ''; //текс входящего сообщения
     private $payload = ''; //дополнительная информация о кнопке
     private $randomID; //Рандомный ID исходящего сообщения
 
     public function __construct()
     {
-
         $this->data = json_decode(file_get_contents('php://input'), true);
         $this->type = $this->data['type'];
         $this->secret = $this->data['secret'];
@@ -85,6 +84,12 @@ class Bot
 
         //if ($this->randomID === $body['random_id']) exit();
     }
+    //получает данные пользователя
+    public function getUser()
+    {
+        $user = self::vk->users()->get($this->userId);
+    }
+
     //отправка сообщения пользователю
     public function send($msg, $kbd = [
         'one_time' => false,
@@ -120,9 +125,9 @@ class Bot
     {
         $ch = curl_init($url);
 
-        curl_setopt($ch, CURLOPT_AUTOREFERER, TRUE);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, TRUE);
+        curl_setopt($ch, CURLOPT_AUTOREFERER, true);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
         curl_setopt($ch, CURLOPT_HEADER, false);
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
@@ -194,11 +199,20 @@ class Bot
         ];
     }
 
-    function myLog($str)
+    public function myLog($str)
     {
         if (is_array($str)) {
             $str = json_encode($str, JSON_UNESCAPED_UNICODE);
         }
         file_put_contents("php://stdout", "$str\n");
+    }
+
+    public function logFile($logText)
+    {
+        $text = "\n========================\n";
+        $text .= date('Y-m-d H:i:s') . "\n";
+        $text .= 'текст сообщения: ';
+        $text .= $logText;
+        file_put_contents(LOG_DIRECTORY . '/log_' . $this->userId . '.txt', $text, FILE_APPEND);
     }
 }
