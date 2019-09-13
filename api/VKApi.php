@@ -4,7 +4,7 @@ namespace api;
 
 class VKApi
 {
-    function __construct()
+    public function __construct()
     {
         echo "создался новый класс VkApi";
     }

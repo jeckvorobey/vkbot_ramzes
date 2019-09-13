@@ -3,25 +3,27 @@
 namespace bot;
 
 use CURLFile;
+use Error;
 use tidy;
 use VK\Client\VKApiClient;
 use VK\Client\Enums\VKLanguage;
 
 class Bot
 {
-    static $vk = ''; //обьект VK API
+    public static $vk = ''; //обьект VK API
     private $msg = '';  //текст сообщения
     private $data = []; //массив полученных данных от сервера
     private $type = ''; //тип входящего сообщения
     private $secret = ''; //секретный ключ пришедший от сервера
-    private $userId = ''; //ID пользователя 
+    private $userId = ''; //ID пользователя
+    private $firstName = ''; //Имя пользователя
+    private $lastName = ''; //Фамилия пользователя
     private $text = ''; //текс входящего сообщения
     private $payload = ''; //дополнительная информация о кнопке
     private $randomID; //Рандомный ID исходящего сообщения
 
     public function __construct()
     {
-
         $this->data = json_decode(file_get_contents('php://input'), true);
         $this->type = $this->data['type'];
         $this->secret = $this->data['secret'];
@@ -83,8 +85,21 @@ class Bot
             }
         }
 
-        //if ($this->randomID === $body['random_id']) exit();
+        $this->getUser(); //получает данные пользователя
     }
+    //получает данные пользователя
+    public function getUser()
+    {
+        $user = self::$vk->users()->get(VK_API_ACCESS_TOKEN, [
+            'user_ids' => $this->userId
+        ]);
+
+        if (!empty($user)) {
+            $this->firstName = $user[0]['first_name'] ?? '';
+            $this->lastName = $user[0]['last_name'] ?? '';
+        }
+    }
+
     //отправка сообщения пользователю
     public function send($msg, $kbd = [
         'one_time' => false,
@@ -120,9 +135,9 @@ class Bot
     {
         $ch = curl_init($url);
 
-        curl_setopt($ch, CURLOPT_AUTOREFERER, TRUE);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, TRUE);
+        curl_setopt($ch, CURLOPT_AUTOREFERER, true);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
         curl_setopt($ch, CURLOPT_HEADER, false);
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
@@ -136,18 +151,15 @@ class Bot
         $response = curl_exec($ch);
 
         if (curl_errno($ch)) {
-            $this->myLog("Error: " . curl_error($ch));
+            new Error();
         }
         if (curl_getinfo($ch, CURLINFO_HTTP_CODE) != 200) {
-            $decodedResponse = json_decode($response, true);
-            $this->myLog("Error code: " . $decodedResponse["error_code"] . "\r\n");
-            $this->myLog("Error message: " . $decodedResponse["error_message"] . "\r\n");
+            new Error();
         } else {
             $res = json_decode($response, true);
             $data = self::$vk->docs()->save(VK_API_ACCESS_TOKEN, [
                 'file' => $res['file'],
             ]);
-            $this->myLog($data);
             return $data;
         }
     }
@@ -195,7 +207,16 @@ class Bot
         ];
     }
 
-    function myLog($str)
+    public function logFile($logText)
+    {
+        $text = "\n========================\n";
+        $text .= date('Y-m-d H:i:s') . "\n";
+        $text .= "Пользователь: " . $this->firstName . " " . $this->lastName . "\n";
+        $text .= "текст сообщения: " . $logText;
+        file_put_contents(LOG_DIRECTORY . '/log_' . $this->userId . '.txt', $text, FILE_APPEND);
+    }
+
+    public function myLog($str)
     {
         if (is_array($str)) {
             $str = json_encode($str, JSON_UNESCAPED_UNICODE);
