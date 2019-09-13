@@ -3,6 +3,7 @@
 namespace bot;
 
 use CURLFile;
+use Error;
 use tidy;
 use VK\Client\VKApiClient;
 use VK\Client\Enums\VKLanguage;
@@ -92,7 +93,7 @@ class Bot
         $user = self::$vk->users()->get(VK_API_ACCESS_TOKEN, [
             'user_ids' => $this->userId
         ]);
-        $this->myLog(gettype($user));
+
         if (!empty($user)) {
             $this->firstName = $user[0]['first_name'] ?? '';
             $this->lastName = $user[0]['last_name'] ?? '';
@@ -150,12 +151,10 @@ class Bot
         $response = curl_exec($ch);
 
         if (curl_errno($ch)) {
-            $this->myLog("Error: " . curl_error($ch));
+            new Error();
         }
         if (curl_getinfo($ch, CURLINFO_HTTP_CODE) != 200) {
-            $decodedResponse = json_decode($response, true);
-            $this->myLog("Error code: " . $decodedResponse["error_code"] . "\r\n");
-            $this->myLog("Error message: " . $decodedResponse["error_message"] . "\r\n");
+            new Error();
         } else {
             $res = json_decode($response, true);
             $data = self::$vk->docs()->save(VK_API_ACCESS_TOKEN, [
@@ -208,12 +207,8 @@ class Bot
         ];
     }
 
-    public function myLog($str)
+    public function errLog()
     {
-        if (is_array($str)) {
-            $str = json_encode($str, JSON_UNESCAPED_UNICODE);
-        }
-        file_put_contents("php://stdout", "$str\n");
     }
 
     public function logFile($logText)
@@ -223,5 +218,13 @@ class Bot
         $text .= "Пользователь: " . $this->firstName . " " . $this->lastName . "\n";
         $text .= "текст сообщения: " . $logText;
         file_put_contents(LOG_DIRECTORY . '/log_' . $this->userId . '.txt', $text, FILE_APPEND);
+    }
+
+    public function myLog($str)
+    {
+        if (is_array($str)) {
+            $str = json_encode($str, JSON_UNESCAPED_UNICODE);
+        }
+        file_put_contents("php://stdout", "$str\n");
     }
 }
