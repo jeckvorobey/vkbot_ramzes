@@ -12,6 +12,7 @@ if (!isset($_REQUEST)) {
     echo 'OK';
     exit;
 }
+
 new Error();
 
 $bot = new Bot;
@@ -128,11 +129,11 @@ try {
                 $bot->status();
                 $bot->send($msg, $kbd, $voice);
             }
-            // no break
+            break;
         case CALLBACK_API_EVENT_MESSAGE_REPLY:
             $bot->callbackOkResponse();
 
-            // no break
+            break;
         default:
             $bot->init();
             $msg = 'Я такой команды не знаю';
