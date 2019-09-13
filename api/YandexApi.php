@@ -24,10 +24,10 @@ class YandexApi
 
         $ch = curl_init();
 
-        curl_setopt($ch, CURLOPT_AUTOREFERER, TRUE);
+        curl_setopt($ch, CURLOPT_AUTOREFERER, true);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_URL, YANDEX_URL);
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, TRUE);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
         curl_setopt($ch, CURLOPT_HEADER, false);
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
@@ -52,7 +52,7 @@ class YandexApi
         curl_close($ch);
     }
 
-    function myLog($str)
+    public function myLog($str)
     {
         if (is_array($str)) {
             $str = json_encode($str, JSON_UNESCAPED_UNICODE);

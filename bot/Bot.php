@@ -207,10 +207,6 @@ class Bot
         ];
     }
 
-    public function errLog()
-    {
-    }
-
     public function logFile($logText)
     {
         $text = "\n========================\n";

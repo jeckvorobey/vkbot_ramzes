@@ -34,7 +34,8 @@ const OGG = 'audio/ogg';
  */
 const STATUS_DIRECTORY = './files/status';
 const AUDIO_DIRECTORY = './files/audio';
-const LOG_DIRECTORY = './files/logs';
+const LOG_DIRECTORY = './files/logs/user';
+const ERR_LOG_DIRECTORY = './files/logs/err';
 
 /**
  * цвета кнопок

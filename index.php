@@ -3,6 +3,7 @@
 use api\YandexApi;
 use Unirest\Exception;
 use bot\Bot;
+use bot\Error;
 
 require_once './vendor/autoload.php';
 include './config/response_text.php';
@@ -11,10 +12,13 @@ if (!isset($_REQUEST)) {
     echo 'OK';
     exit;
 }
+new Error();
 
 $bot = new Bot;
 
-if ($bot->getSecret() !== VK_API_SECRET_KEY) exit();
+if ($bot->getSecret() !== VK_API_SECRET_KEY) {
+    exit();
+}
 
 $yandexApi = new YandexApi;
 
@@ -25,7 +29,7 @@ try {
             echo CALLBACK_API_CONFIRMATION_TOKEN;
             break;
 
-        case CALLBACK_API_EVENT_MESSAGE_NEW;
+        case CALLBACK_API_EVENT_MESSAGE_NEW:
             $bot->init();
             if (file_exists(STATUS_DIRECTORY . '/' . $bot->getUserId() . '.txt')) {
                 $status = $bot->status('get');
@@ -124,9 +128,11 @@ try {
                 $bot->status();
                 $bot->send($msg, $kbd, $voice);
             }
+            // no break
         case CALLBACK_API_EVENT_MESSAGE_REPLY:
             $bot->callbackOkResponse();
 
+            // no break
         default:
             $bot->init();
             $msg = 'Я такой команды не знаю';
@@ -140,5 +146,5 @@ try {
             ];
     }
 } catch (Exception $e) {
-    myLog('Error' . $e->getCode() . ' ' . $e->getMessage());
+    new Error();
 }
