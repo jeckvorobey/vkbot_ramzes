@@ -135,16 +135,7 @@ try {
 
             break;
         default:
-            $bot->init();
-            $msg = 'Я такой команды не знаю';
-            $kbd = [
-                'one_time' => false,
-                'buttons' => [
-                    [
-                        $bot->getBtn(TYPE_TEXT, 'Вернуться в начало', COLOR_PRIMARY, CMD_START)
-                    ]
-                ]
-            ];
+            $bot->callbackOkResponse();
     }
 } catch (Exception $e) {
     new Error();
