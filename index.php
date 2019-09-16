@@ -69,7 +69,7 @@ try {
                 $bot->logFile($inst);
                 $trans = '1textchange1';
                 $forSpeechText = str_replace($trans, str_replace(' ', ' - ', $inst), $text['res_to_inefficient_installation']);
-                $regArr = ['- ', '+о'];
+                $regArr = ['- ', '+'];
                 $msg = str_replace($regArr, '', $forSpeechText);
                 //создание аудио ответа
                 $file = $yandexApi->getVoice($forSpeechText);
