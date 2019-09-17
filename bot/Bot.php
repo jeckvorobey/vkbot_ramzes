@@ -18,6 +18,7 @@ class Bot
     private $userId = ''; //ID пользователя
     private $firstName = ''; //Имя пользователя
     private $lastName = ''; //Фамилия пользователя
+    private $userSex = 0; //пол пользователя
     private $text = ''; //текс входящего сообщения
     private $payload = ''; //дополнительная информация о кнопке
     private $randomID; //Рандомный ID исходящего сообщения
@@ -28,6 +29,22 @@ class Bot
         $this->type = $this->data['type'];
         $this->secret = $this->data['secret'];
         // $this->myLog($this->data);
+    }
+
+    public function getUserSex()
+    {
+        return $this->userSex;
+    }
+
+
+    public function getLastName()
+    {
+        return $this->lastName;
+    }
+
+    public function getFirstName()
+    {
+        return $this->firstName;
     }
 
     public function setMsg($msg)
@@ -91,12 +108,14 @@ class Bot
     public function getUser()
     {
         $user = self::$vk->users()->get(VK_API_ACCESS_TOKEN, [
-            'user_ids' => $this->userId
+            'user_ids' => $this->userId,
+            'fields' => 'sex'
         ]);
 
         if (!empty($user)) {
             $this->firstName = $user[0]['first_name'] ?? '';
             $this->lastName = $user[0]['last_name'] ?? '';
+            $this->userSex = $user[0]['sex'] ?? 0;
         }
     }
 

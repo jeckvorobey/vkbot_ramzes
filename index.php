@@ -68,7 +68,14 @@ try {
                 $inst = $bot->getText();
                 $bot->logFile($inst);
                 $trans = '1textchange1';
-                $forSpeechText = str_replace($trans, str_replace(' ', ' - ', $inst), $text['res_to_inefficient_installation']);
+                $resText = $text['res_to_inefficient_installation'];
+                $preg = '//';
+
+                if ($bot->userSex() === 2) {
+                    $resText = '';
+                }
+
+                $forSpeechText = str_replace($trans, str_replace(' ', ' - ', $inst), $resText);
                 $regArr = ['- ', '+'];
                 $msg = str_replace($regArr, '', $forSpeechText);
                 //создание аудио ответа
