@@ -71,7 +71,7 @@ try {
                 $resText = $text['res_to_inefficient_installation'];
 
 
-                if ($bot->getUserSex() === 2) {
+                if ($bot->getUserSex() === 1) {
                     $preg = '/(.)л([\s|\.])/';
                     $resText = preg_replace($preg, '\1ла\2', $resText);
                 }
