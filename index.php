@@ -69,10 +69,11 @@ try {
                 $bot->logFile($inst);
                 $trans = '1textchange1';
                 $resText = $text['res_to_inefficient_installation'];
-                $preg = '//';
 
-                if ($bot->userSex() === 2) {
-                    $resText = '';
+
+                if ($bot->getUserSex() === 2) {
+                    $preg = '/(.)л([\s|\.])/';
+                    $resText = preg_replace($preg, '\1ла\2', $resText);
                 }
 
                 $forSpeechText = str_replace($trans, str_replace(' ', ' - ', $inst), $resText);
