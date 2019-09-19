@@ -203,7 +203,7 @@ class Bot
 
     public function callbackOkResponse()
     {
-        self::callbackResponse('OK');
+        $this->callbackResponse('OK');
         exit();
     }
 

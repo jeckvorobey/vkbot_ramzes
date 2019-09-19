@@ -28,6 +28,7 @@ try {
         case CALLBACK_API_EVENT_CONFIRMATION:
 
             echo CALLBACK_API_CONFIRMATION_TOKEN;
+            $bot->callbackOkResponse();
             break;
 
         case CALLBACK_API_EVENT_MESSAGE_NEW:
