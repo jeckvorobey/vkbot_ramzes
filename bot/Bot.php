@@ -28,7 +28,7 @@ class Bot
         $this->data = json_decode(file_get_contents('php://input'), true);
         $this->type = $this->data['type'];
         $this->secret = $this->data['secret'];
-        // $this->myLog($this->data);
+         //$this->myLog($this->data);
     }
 
     public function getUserSex()
@@ -182,11 +182,15 @@ class Bot
             return $data;
         }
     }
+
     /**
      * сохранение статуса диалога
      * по умолчанию метод записывает файл со статусом 0
      * @string 'put' записывает файл
      * @string 'get' получает статус
+     * @param string $method
+     * @param int $status
+     * @return bool|int
      */
     public function status($method = 'put', $status = 0)
     {
@@ -204,7 +208,6 @@ class Bot
     public function callbackOkResponse()
     {
         $this->callbackResponse('OK');
-        exit();
     }
 
     public function callbackResponse($var)
