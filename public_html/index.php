@@ -1,12 +1,11 @@
 <?php
 
 use api\YandexApi;
-use Unirest\Exception;
 use bot\Bot;
 use bot\Error;
 
-require_once './vendor/autoload.php';
-include './config/response_text.php';
+require_once '../vendor/autoload.php';
+include '../config/response_text.php';
 
 if (!isset($_REQUEST)) {
     echo 'OK';
@@ -16,6 +15,7 @@ if (!isset($_REQUEST)) {
 new Error();
 
 $bot = new Bot;
+
 
 if ($bot->getSecret() !== VK_API_SECRET_KEY) {
     exit();
@@ -28,7 +28,6 @@ try {
         case CALLBACK_API_EVENT_CONFIRMATION:
 
             echo CALLBACK_API_CONFIRMATION_TOKEN;
-            $bot->callbackOkResponse();
             break;
 
         case CALLBACK_API_EVENT_MESSAGE_NEW:
@@ -36,8 +35,8 @@ try {
             if (file_exists(STATUS_DIRECTORY . '/' . $bot->getUserId() . '.txt')) {
                 $status = $bot->status('get');
             }
-            //Если команда "начать"
-            if (strcasecmp($bot->getPayload(), CMD_START) === 0 || strcasecmp($bot->getText(), TEXT_START) === 0) {
+            //Если команда "Начать"
+            if ($bot->getPayload() === CMD_START || $bot->getText() === TEXT_START) {
                 $msg = $text['welcome_messages'];
 
                 $kbd = [
@@ -54,7 +53,7 @@ try {
             }
 
             //если команда "Проработать установку"
-            if (strcasecmp($bot->getPayload(), CMD_INSTALLATION) === 0 || strcasecmp($bot->getText(), TEXT_INSTALLATION) === 0 || strcasecmp($bot->getPayload(), CMD_CLARIFY) === 0) {
+            if ($bot->getPayload() === CMD_INSTALLATION || $bot->getText() === TEXT_INSTALLATION || $bot->getPayload() === CMD_CLARIFY) {
                 $msg = $text['inefficient_installation'];
                 $kbd = [
                     'one_time' => true,
@@ -101,7 +100,7 @@ try {
             }
 
             //обработка кнопки "Перевернуть установку"
-            if (strcasecmp($bot->getPayload(), CMD_FLIP) === 0 || strcasecmp($bot->getPayload(), CMD_CLARIFY_EFFECT) === 0) {
+            if ($bot->getPayload() === CMD_FLIP || $bot->getPayload() === CMD_CLARIFY_EFFECT) {
                 $msg = $text['effective_installation'];
                 $bot->status('put', 2);
                 $bot->send($msg);
