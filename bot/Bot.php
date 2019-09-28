@@ -28,7 +28,7 @@ class Bot
         $this->data = json_decode(file_get_contents('php://input'), true);
         $this->type = $this->data['type'];
         $this->secret = $this->data['secret'];
-         //$this->myLog($this->data);
+         $this->myLog($this->data);
     }
 
     public function getUserSex()
@@ -179,6 +179,7 @@ class Bot
             $data = self::$vk->docs()->save(VK_API_ACCESS_TOKEN, [
                 'file' => $res['file'],
             ]);
+
             return $data;
         }
     }
@@ -213,7 +214,6 @@ class Bot
     public function callbackResponse($var)
     {
         echo $var;
-        exit();
     }
 
     //делаем кнопку для клавиатуры
