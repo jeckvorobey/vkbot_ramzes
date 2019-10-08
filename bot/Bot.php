@@ -28,7 +28,7 @@ class Bot
         $this->data = json_decode(file_get_contents('php://input'), true);
         $this->type = $this->data['type'];
         $this->secret = $this->data['secret'];
-         $this->myLog($this->data);
+        $this->myLog($this->data);
     }
 
     public function getUserSex()
@@ -104,6 +104,7 @@ class Bot
 
         $this->getUser(); //получает данные пользователя
     }
+
     //получает данные пользователя
     public function getUser()
     {
@@ -135,6 +136,7 @@ class Bot
         ]);
         $this->callbackOkResponse();
     }
+
     //Получет адрес сервера для загрузки аудиосообщения
     public function uploadServer()
     {
@@ -196,7 +198,7 @@ class Bot
     public function status($method = 'put', $status = 0)
     {
         if ($method === 'get') {
-            $status = (int) file_get_contents(STATUS_DIRECTORY . '/' . $this->userId . '.txt');
+            $status = (int)file_get_contents(STATUS_DIRECTORY . '/' . $this->userId . '.txt');
             return $status;
         }
 
