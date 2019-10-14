@@ -103,6 +103,14 @@ class Bot
         }
 
         $this->getUser(); //получает данные пользователя
+        self::dbConnect();
+    }
+
+    private static function dbConnect()
+    {
+        $dbConfig = include '../config/dbConfig.php';
+
+        Db::getInstance()->Connect($dbConfig['db_user'], $dbConfig['db_password'], $dbConfig['db_base']);
     }
 
     //получает данные пользователя
@@ -184,6 +192,18 @@ class Bot
 
             return $data;
         }
+    }
+
+    /**
+     * Сохранение в БД очереди задния на обработку установки
+     */
+    public function saveTaskInst()
+    {
+        return Db::getInstance()->Query('INSERT INTO `tasks_tbl`(`user_id`, `inst_text`) VALUES ( :user_id, :inst_text)',
+            [
+                'user_id' => $this->userId,
+                'inst_text' => $this->text
+            ]);
     }
 
     /**

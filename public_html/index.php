@@ -4,6 +4,7 @@ use api\YandexApi;
 use bot\Bot;
 use bot\Error;
 
+
 require_once '../vendor/autoload.php';
 include '../config/response_text.php';
 
@@ -56,10 +57,9 @@ try {
 
                 $bot->status();
                 $bot->send($msg, $kbd);
-                exit();
+                break;
             } //если команда "Проработать установку"
-            elseif ($bot->getPayload() === CMD_INSTALLATION || $bot->getText() === TEXT_INSTALLATION || $bot->getPayload
-                () === CMD_CLARIFY) {
+            elseif ($bot->getPayload() === CMD_INSTALLATION || $bot->getText() === TEXT_INSTALLATION || $bot->getPayload() === CMD_CLARIFY) {
                 $msg = $text['inefficient_installation'];
                 $kbd = [
                     'one_time' => true,
@@ -67,51 +67,62 @@ try {
                 ];
                 $bot->status('put', 1);
                 $bot->send($msg, $kbd);
-                exit();
+                break;
             } //обработка неэффективной установки
             elseif ($status === 1) {
+                $bot->saveTaskInst();
 
-                //обработка текста
-                $inst = $bot->getText();
-                $bot->logFile($inst);
-                $trans = '1textchange1';
-                $resText = $text['res_to_inefficient_installation'];
-
-
-                if ($bot->getUserSex() === 1) {
-                    $preg = '/(.)л([\s|\.])/';
-                    $resText = preg_replace($preg, '\1ла\2', $resText);
-                }
-
-                $forSpeechText = str_replace($trans, str_replace(' ', ' - ', $inst), $resText);
-                $regArr = ['- ', '+'];
-                $msg = str_replace($regArr, '', $forSpeechText);
-                //создание аудио ответа
-                $file = $yandexApi->getVoice($forSpeechText);
-                $url = $bot->uploadServer();
-                $voice = $bot->setAudioVk($url, $file);
-                $voice = 'doc' . $voice['audio_message']['owner_id'] . '_' . $voice['audio_message']['id'] . '_' . $voice['audio_message']['access_key'];
                 $kbd = [
                     'one_time' => false,
                     'buttons' => [
                         [
-                            $bot->getBtn(TYPE_TEXT, 'Перевернуть установку', COLOR_POSITIVE, CMD_FLIP)
+                            $bot->getBtn(TYPE_TEXT, 'В начало', COLOR_PRIMARY, CMD_START)
                         ],
-                        [
-                            $bot->getBtn(TYPE_TEXT, 'Уточнить установку', COLOR_SECONDARY, CMD_CLARIFY)
-                        ]
                     ]
                 ];
-                $bot->status();
-                $bot->send($msg, $kbd, $voice);
 
-                exit();
+                $bot->send('Установка обрабатывается...');
+                break;
+                //обработка текста
+                /* $inst = $bot->getText();
+                 $bot->logFile($inst);
+                 $trans = '1textchange1';
+                 $resText = $text['res_to_inefficient_installation'];
+
+
+                 if ($bot->getUserSex() === 1) {
+                     $preg = '/(.)л([\s|\.])/';
+                     $resText = preg_replace($preg, '\1ла\2', $resText);
+                 }
+
+                 $forSpeechText = str_replace($trans, str_replace(' ', ' - ', $inst), $resText);
+                 $regArr = ['- ', '+'];
+                 $msg = str_replace($regArr, '', $forSpeechText);
+                 //создание аудио ответа
+                 $file = $yandexApi->getVoice($forSpeechText);
+                 $url = $bot->uploadServer();
+                 $voice = $bot->setAudioVk($url, $file);
+                 $voice = 'doc' . $voice['audio_message']['owner_id'] . '_' . $voice['audio_message']['id'] . '_' .
+                     $voice['audio_message']['access_key'];
+                 $kbd = [
+                     'one_time' => false,
+                     'buttons' => [
+                         [
+                             $bot->getBtn(TYPE_TEXT, 'Перевернуть установку', COLOR_POSITIVE, CMD_FLIP)
+                         ],
+                         [
+                             $bot->getBtn(TYPE_TEXT, 'Уточнить установку', COLOR_SECONDARY, CMD_CLARIFY)
+                         ]
+                     ]
+                 ];
+                 $bot->status();
+                 $bot->send($msg, $kbd, $voice);
+                 break;*/
             } //обработка кнопки "Перевернуть установку"
             elseif ($bot->getPayload() === CMD_FLIP || $bot->getPayload() === CMD_CLARIFY_EFFECT) {
                 $msg = $text['effective_installation'];
                 $bot->status('put', 2);
                 $bot->send($msg);
-                exit();
             } //обработка эффективной установки
             elseif ($status === 2) {
 
@@ -143,7 +154,6 @@ try {
                 ];
                 $bot->status();
                 $bot->send($msg, $kbd, $voice);
-                exit();
             } else {
                 $msg = '';
                 $kbd = [
@@ -156,12 +166,11 @@ try {
                 ];
                 //$bot->status();
                 $bot->send($msg);
-                exit();
+                break;
             }
             break;
         default:
             $bot->callbackOkResponse();
-            exit();
     }
 } catch (Exception $e) {
     new Error();
