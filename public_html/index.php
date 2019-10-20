@@ -37,10 +37,7 @@ try {
 
         case CALLBACK_API_EVENT_MESSAGE_NEW:
             $bot->init();
-
-            if (file_exists(STATUS_DIRECTORY . '/' . $bot->getUserId() . '.txt')) {
-                $status = $bot->status('get');
-            }
+            $dialog = $bot->getStatus();
 
             //Если команда "Начать"
             if ($bot->getPayload() === CMD_START || $bot->getText() === TEXT_START) {
@@ -55,7 +52,8 @@ try {
                     ]
                 ];
 
-                $bot->status();
+                $bot->setStatus(0);
+                $bot->myLog(gettype());
                 $bot->send($msg, $kbd);
                 break;
             } //если команда "Проработать установку"
@@ -65,12 +63,13 @@ try {
                     'one_time' => true,
                     'buttons' => []
                 ];
-                $bot->status('put', 1);
+                $bot->setStatus(1);
                 $bot->send($msg, $kbd);
                 break;
             } //обработка неэффективной установки
-            elseif ($status === 1) {
-                $bot->saveTaskInst();
+            elseif ($dialog[0]['dialog_status'] == 1) {
+                $bot->saveInst(1);
+                $bot->setStatus(0);
 
                 $kbd = [
                     'one_time' => false,
@@ -81,91 +80,57 @@ try {
                     ]
                 ];
 
-                $bot->send('Установка обрабатывается...');
+                $bot->send('Установка обрабатывается...', $kbd);
                 break;
+
+            } //обработка кнопки "Перевернуть установку"
+            elseif ($bot->getPayload() === CMD_FLIP || $bot->getPayload() === CMD_CLARIFY_EFFECT) {
+                $msg = $text['effective_installation'];
+                $bot->setStatus(2);
+                $bot->send($msg);
+            } //обработка эффективной установки
+            elseif (+$dialog[0]['dialog_status'] === 2) {
+
                 //обработка текста
                 /* $inst = $bot->getText();
                  $bot->logFile($inst);
                  $trans = '1textchange1';
-                 $resText = $text['res_to_inefficient_installation'];
-
-
-                 if ($bot->getUserSex() === 1) {
-                     $preg = '/(.)л([\s|\.])/';
-                     $resText = preg_replace($preg, '\1ла\2', $resText);
-                 }
-
-                 $forSpeechText = str_replace($trans, str_replace(' ', ' - ', $inst), $resText);
-                 $regArr = ['- ', '+'];
-                 $msg = str_replace($regArr, '', $forSpeechText);
+                 $forSpeechText = str_replace($trans, str_replace(' ', ' - ', $inst), $text['res_to_effective_installation']);
+                 $msg = str_replace('- ', '', $forSpeechText);
                  //создание аудио ответа
                  $file = $yandexApi->getVoice($forSpeechText);
                  $url = $bot->uploadServer();
                  $voice = $bot->setAudioVk($url, $file);
-                 $voice = 'doc' . $voice['audio_message']['owner_id'] . '_' . $voice['audio_message']['id'] . '_' .
-                     $voice['audio_message']['access_key'];
+                 $voice = 'doc' . $voice['audio_message']['owner_id'] . '_' . $voice['audio_message']['id'] . '_' . $voice['audio_message']['access_key'];
+
                  $kbd = [
                      'one_time' => false,
                      'buttons' => [
                          [
-                             $bot->getBtn(TYPE_TEXT, 'Перевернуть установку', COLOR_POSITIVE, CMD_FLIP)
+                             $bot->getBtn(TYPE_TEXT, 'Следующая установка', COLOR_POSITIVE, CMD_INSTALLATION)
                          ],
                          [
-                             $bot->getBtn(TYPE_TEXT, 'Уточнить установку', COLOR_SECONDARY, CMD_CLARIFY)
+                             $bot->getBtn(TYPE_TEXT, 'Уточнить установку', COLOR_SECONDARY, CMD_CLARIFY_EFFECT)
+                         ],
+                         [
+                             $bot->getBtn(TYPE_TEXT, 'Вернуться в начало', COLOR_PRIMARY, CMD_START)
                          ]
                      ]
                  ];
                  $bot->status();
                  $bot->send($msg, $kbd, $voice);
-                 break;*/
-            } //обработка кнопки "Перевернуть установку"
-            elseif ($bot->getPayload() === CMD_FLIP || $bot->getPayload() === CMD_CLARIFY_EFFECT) {
-                $msg = $text['effective_installation'];
-                $bot->status('put', 2);
-                $bot->send($msg);
-            } //обработка эффективной установки
-            elseif ($status === 2) {
-
-                //обработка текста
-                $inst = $bot->getText();
-                $bot->logFile($inst);
-                $trans = '1textchange1';
-                $forSpeechText = str_replace($trans, str_replace(' ', ' - ', $inst), $text['res_to_effective_installation']);
-                $msg = str_replace('- ', '', $forSpeechText);
-                //создание аудио ответа
-                $file = $yandexApi->getVoice($forSpeechText);
-                $url = $bot->uploadServer();
-                $voice = $bot->setAudioVk($url, $file);
-                $voice = 'doc' . $voice['audio_message']['owner_id'] . '_' . $voice['audio_message']['id'] . '_' . $voice['audio_message']['access_key'];
-
-                $kbd = [
-                    'one_time' => false,
-                    'buttons' => [
-                        [
-                            $bot->getBtn(TYPE_TEXT, 'Следующая установка', COLOR_POSITIVE, CMD_INSTALLATION)
-                        ],
-                        [
-                            $bot->getBtn(TYPE_TEXT, 'Уточнить установку', COLOR_SECONDARY, CMD_CLARIFY_EFFECT)
-                        ],
-                        [
-                            $bot->getBtn(TYPE_TEXT, 'Вернуться в начало', COLOR_PRIMARY, CMD_START)
-                        ]
-                    ]
-                ];
-                $bot->status();
-                $bot->send($msg, $kbd, $voice);
-            } else {
-                $msg = '';
-                $kbd = [
-                    'one_time' => false,
-                    'buttons' => [
-                        [
-                            $bot->getBtn(TYPE_TEXT, 'В начало', COLOR_PRIMARY, CMD_START)
-                        ],
-                    ]
-                ];
-                //$bot->status();
-                $bot->send($msg);
+             } else {
+                 $msg = '';
+                 $kbd = [
+                     'one_time' => false,
+                     'buttons' => [
+                         [
+                             $bot->getBtn(TYPE_TEXT, 'В начало', COLOR_PRIMARY, CMD_START)
+                         ],
+                     ]
+                 ];
+                 //$bot->status();
+                 $bot->send($msg);*/
                 break;
             }
             break;

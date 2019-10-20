@@ -196,37 +196,49 @@ class Bot
 
     /**
      * Сохранение в БД очереди задния на обработку установки
+     *
+     * @return string
+     * @var $inst integer
      */
-    public function saveTaskInst()
+    public function saveInst($instType)
     {
-        return Db::getInstance()->Query('INSERT INTO `tasks_tbl`(`user_id`, `inst_text`) VALUES ( :user_id, :inst_text)',
+        return Db::getInstance()->Query('INSERT INTO `instalation_tbl`(`user_id`, `inst_text`, `type_inst`, `status`) VALUES ( :user_id, :inst_text, :type_inst, :status)',
             [
                 'user_id' => $this->userId,
-                'inst_text' => $this->text
+                'inst_text' => $this->text,
+                'type_inst' => $instType,
+                'status' => 1,
             ]);
     }
 
     /**
      * сохранение статуса диалога
      * по умолчанию метод записывает файл со статусом 0
-     * @string 'put' записывает файл
-     * @string 'get' получает статус
-     * @param string $method
-     * @param int $status
-     * @return bool|int
-     */
-    public function status($method = 'put', $status = 0)
+   */
+    public function getStatus()
     {
-        if ($method === 'get') {
-            $status = (int)file_get_contents(STATUS_DIRECTORY . '/' . $this->userId . '.txt');
-            return $status;
-        }
+        return Db::getInstance()->Select('SELECT `dialog_status` FROM `dialogue_tbl` WHERE id_user = :id_user', [
+            'id_user' => $this->userId,
+        ]);
 
-        if ($method === 'put') {
-            return file_put_contents(STATUS_DIRECTORY . '/' . $this->userId . '.txt', $status);
-        }
+        /* $status = (int)file_get_contents(STATUS_DIRECTORY . '/' . $this->userId . '.txt');
+        return $status;*/
     }
 
+    public function setStatus($status)
+    {
+        if (!$this->getStatus()) {
+            return Db::getInstance()->Query('INSERT INTO `dialogue_tbl`(`id_user`, `dialog_status`) VALUES ( :id_user, :dialog_status)', [
+                'id_user' => $this->userId,
+                'dialog_status' => $status,
+            ]);
+        }else{
+            return Db::getInstance()->Query('UPDATE `dialogue_tbl` SET `dialog_status`= :dialog_status WHERE id_user = :id_user', [
+                'dialog_status' => $status,
+                'id_user' => $this->userId,
+            ]);
+        }
+    }
 
     public function callbackOkResponse()
     {
@@ -236,6 +248,7 @@ class Bot
     public function callbackResponse($var)
     {
         echo $var;
+        exit();
     }
 
     //делаем кнопку для клавиатуры
