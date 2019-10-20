@@ -10,7 +10,7 @@ use VK\Client\Enums\VKLanguage;
 
 class Bot
 {
-    public static $vk = ''; //обьект VK API
+    public static $vk = null; //обьект VK API
     private $msg = '';  //текст сообщения
     private $data = []; //массив полученных данных от сервера
     private $type = ''; //тип входящего сообщения
@@ -33,9 +33,15 @@ class Bot
 
     public function getUserSex()
     {
-        return $this->userSex;
+        return Db::getInstance()->Select('SELECT `user_sex` FROM `users_tbl` WHERE user_vk_id = :userId', [
+            'userId' => '502583350', //$this->userId,
+        ]);
     }
 
+    public function setUserId($userID)
+    {
+        $this->userId = $userID;
+    }
 
     public function getLastName()
     {
@@ -87,9 +93,14 @@ class Bot
         return $this->secret;
     }
 
+    private static function vk(){
+        if(self::$vk == null){
+            self::$vk = new VKApiClient(VK_API_VERSION, VKLanguage::RUSSIAN);
+        }
+        return self::$vk;
+    }
     public function init()
     {
-        self::$vk = new VKApiClient(VK_API_VERSION, VKLanguage::RUSSIAN);
 
         $body = $this->data['object'];
 
@@ -102,21 +113,29 @@ class Bot
             }
         }
 
-        $this->getUser(); //получает данные пользователя
+        $this->getUser(); //получает данные пользователя из ВК
         self::dbConnect();
+        $this->setUser();
     }
 
     private static function dbConnect()
     {
-        $dbConfig = include '../config/dbConfig.php';
+        $dbConfig = include __DIR__ . '/../config/dbConfig.php';
 
         Db::getInstance()->Connect($dbConfig['db_user'], $dbConfig['db_password'], $dbConfig['db_base']);
+    }
+
+
+    public function getConnect()
+    {
+        self::dbConnect();
     }
 
     //получает данные пользователя
     public function getUser()
     {
-        $user = self::$vk->users()->get(VK_API_ACCESS_TOKEN, [
+
+        $user = self::vk()->users()->get(VK_API_ACCESS_TOKEN, [
             'user_ids' => $this->userId,
             'fields' => 'sex'
         ]);
@@ -132,11 +151,11 @@ class Bot
     public function send($msg, $kbd = [
         'one_time' => false,
         'buttons' => []
-    ], $voice = '')
+    ], $voice = '', $userId = null)
     {
         $this->randomID = mt_rand(20, 999999999);
-        self::$vk->messages()->send(VK_API_ACCESS_TOKEN, [
-            'peer_id' => $this->userId,
+        self::vk()->messages()->send(VK_API_ACCESS_TOKEN, [
+            'peer_id' => $userId ?? $this->userId,
             'random_id' => $this->randomID,
             'attachment' => $voice,
             'message' => $msg,
@@ -148,7 +167,7 @@ class Bot
     //Получет адрес сервера для загрузки аудиосообщения
     public function uploadServer()
     {
-        $uploadUrl = self::$vk->docs()->getMessagesUploadServer(
+        $uploadUrl = self::vk()->docs()->getMessagesUploadServer(
             VK_API_ACCESS_TOKEN,
             [
                 'type' => 'audio_message',
@@ -186,12 +205,31 @@ class Bot
             new Error();
         } else {
             $res = json_decode($response, true);
-            $data = self::$vk->docs()->save(VK_API_ACCESS_TOKEN, [
+            $data = self::vk()->docs()->save(VK_API_ACCESS_TOKEN, [
                 'file' => $res['file'],
             ]);
 
             return $data;
         }
+    }
+
+    public function setUser()
+    {
+        if (!$this->getUserVkId($this->userId)) {
+            return Db::getInstance()->Query('INSERT INTO `users_tbl`(`user_vk_id`, `first_name`, `last_name`, `user_sex`) VALUES (:user_vk_id, :first_name, :last_name, :user_sex)', [
+                'user_vk_id' => $this->userId,
+                'first_name' => $this->firstName,
+                'last_name' => $this->lastName,
+                'user_sex' => $this->userSex,
+            ]);
+        }
+    }
+
+    public function getUserVkId($userVkId)
+    {
+        return Db::getInstance()->Select('SELECT * FROM `users_tbl` WHERE user_vk_id = :userVkId', [
+            'userVkId' => $userVkId,
+        ]);
     }
 
     /**
@@ -202,7 +240,7 @@ class Bot
      */
     public function saveInst($instType)
     {
-        return Db::getInstance()->Query('INSERT INTO `instalation_tbl`(`user_id`, `inst_text`, `type_inst`, `status`) VALUES ( :user_id, :inst_text, :type_inst, :status)',
+        return Db::getInstance()->Query('INSERT INTO `instalation_tbl`(`user_vk_id`, `inst_text`, `type_inst`, `status`) VALUES ( :user_id, :inst_text, :type_inst, :status)',
             [
                 'user_id' => $this->userId,
                 'inst_text' => $this->text,
@@ -214,7 +252,7 @@ class Bot
     /**
      * сохранение статуса диалога
      * по умолчанию метод записывает файл со статусом 0
-   */
+     */
     public function getStatus()
     {
         return Db::getInstance()->Select('SELECT `dialog_status` FROM `dialogue_tbl` WHERE id_user = :id_user', [
@@ -232,7 +270,7 @@ class Bot
                 'id_user' => $this->userId,
                 'dialog_status' => $status,
             ]);
-        }else{
+        } else {
             return Db::getInstance()->Query('UPDATE `dialogue_tbl` SET `dialog_status`= :dialog_status WHERE id_user = :id_user', [
                 'dialog_status' => $status,
                 'id_user' => $this->userId,

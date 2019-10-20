@@ -3,31 +3,26 @@
 
 namespace bot;
 
-use bot\SendMsg;
-use mysql_xdevapi\Exception;
-
+require_once __DIR__ . '/../vendor/autoload.php';
 
 class AutoTask
 {
-    private $sendMsg;
+    private static $sendMsg;
     private $data;
 
     public function init()
     {
-       $this->sendMsg = new SendMsg;
-        var_dump($this->sendMsg);
-                //echo '\[ERROR\] '. $e->getMessage() . ' File: ' . $e->getFile() . 'Line: ' .$e->getLine();
+        self::$sendMsg = new SendMsg();
 
+        $this->data = self::$sendMsg->init();
 
-     //   $this->data = self::$sendMsg->init();
-
-        if(!empty($this->data)){
-            var_dump($this->data);
-        }else{
+        if (!empty($this->data)) {
+            self::$sendMsg->setData($this->data);
+        } else {
             echo 'Пусто';
         }
     }
 }
 
-$task = new AutoTask;
-$task->init();
+$t = new AutoTask();
+$t->init();

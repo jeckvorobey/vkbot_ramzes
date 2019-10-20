@@ -6,6 +6,7 @@ class YandexApi
 {
     public function getVoice($text)
     {
+        echo AUDIO_DIRECTORY;
         $audioFile = AUDIO_DIRECTORY . '/voice_' . md5($text) . '.ogg';
         if (file_exists($audioFile)) {
             return $audioFile;
@@ -46,11 +47,12 @@ class YandexApi
             $this->myLog("Error code: " . $decodedResponse["error_code"] . "\r\n");
             $this->myLog("Error message: " . $decodedResponse["error_message"] . "\r\n");
         } else {
-            file_put_contents(AUDIO_DIRECTORY . '/voice_' . md5($text) . '.ogg', $response);
-            return $audioFile = AUDIO_DIRECTORY . '/voice_' . md5($text) . '.ogg';
+            file_put_contents(  AUDIO_DIRECTORY . '/voice_' . md5($text) . '.ogg', $response);
+            return $audioFile =  AUDIO_DIRECTORY . '/voice_' . md5($text) . '.ogg';
         }
         curl_close($ch);
     }
+
 
     public function myLog($str)
     {

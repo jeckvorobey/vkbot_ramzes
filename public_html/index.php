@@ -53,7 +53,6 @@ try {
                 ];
 
                 $bot->setStatus(0);
-                $bot->myLog(gettype());
                 $bot->send($msg, $kbd);
                 break;
             } //если команда "Проработать установку"
