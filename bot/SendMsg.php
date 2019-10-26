@@ -25,7 +25,6 @@ class SendMsg
     public function init()
     {
         $this->text = require_once __DIR__ . '/../config/response_text.php';
-        self::bot()->getConnect();
         return Db::getInstance()->Select('SELECT * FROM `instalation_tbl` WHERE status = 1 LIMIT 1');
     }
 

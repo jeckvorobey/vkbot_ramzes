@@ -3,6 +3,7 @@
 use api\YandexApi;
 use bot\Bot;
 use bot\Error;
+use bot\User;
 
 
 require_once '../vendor/autoload.php';
@@ -37,10 +38,9 @@ try {
 
         case CALLBACK_API_EVENT_MESSAGE_NEW:
             $bot->init();
-            $dialog = $bot->getStatus();
-
+            $user = new User($bot->getVkId());
             //Если команда "Начать"
-            if ($bot->getPayload() === CMD_START || $bot->getText() === TEXT_START) {
+            if ($bot->getText() === TEXT_START || $bot->getPayload() === CMD_START) {
                 $msg = $text['welcome_messages'];
 
                 $kbd = [
@@ -51,10 +51,7 @@ try {
                         ]
                     ]
                 ];
-
-                $bot->setStatus(0);
-                $bot->send($msg, $kbd);
-                break;
+                $bot->send($msg, $kbd, $user->userVkId);
             } //если команда "Проработать установку"
             elseif ($bot->getPayload() === CMD_INSTALLATION || $bot->getText() === TEXT_INSTALLATION || $bot->getPayload() === CMD_CLARIFY) {
                 $msg = $text['inefficient_installation'];
@@ -62,34 +59,54 @@ try {
                     'one_time' => true,
                     'buttons' => []
                 ];
-                $bot->setStatus(1);
-                $bot->send($msg, $kbd);
-                break;
+                $user->upStatusDialog(1);
+                $bot->send($msg, $kbd, $user->userVkId);
             } //обработка неэффективной установки
-            elseif ($dialog[0]['dialog_status'] == 1) {
-                $bot->saveInst(1);
-                $bot->setStatus(0);
+            elseif (+$user->dialog === 1) {
+                $bot->saveInst(1, $user->userId);
+                $user->upStatusDialog(0);
 
                 $kbd = [
                     'one_time' => false,
                     'buttons' => [
+                        [
+                            $bot->getBtn(TYPE_TEXT, 'Уточнить установку', COLOR_SECONDARY, CMD_CLARIFY)
+                        ],
+                        [
+                            $bot->getBtn(TYPE_TEXT, 'Перевернуть установку', COLOR_POSITIVE, CMD_FLIP)
+                        ],
                         [
                             $bot->getBtn(TYPE_TEXT, 'В начало', COLOR_PRIMARY, CMD_START)
                         ],
                     ]
                 ];
 
-                $bot->send('Установка обрабатывается...', $kbd);
-                break;
-
+                $bot->send('Установка обрабатывается...', $kbd, $user->userVkId);
             } //обработка кнопки "Перевернуть установку"
             elseif ($bot->getPayload() === CMD_FLIP || $bot->getPayload() === CMD_CLARIFY_EFFECT) {
                 $msg = $text['effective_installation'];
-                $bot->setStatus(2);
-                $bot->send($msg);
+                $kbd = [
+                    'one_time' => true,
+                    'buttons' => []
+                ];
+                $user->upStatusDialog(2);
+                $bot->send($msg, $kbd, $user->userVkId);
             } //обработка эффективной установки
-            elseif (+$dialog[0]['dialog_status'] === 2) {
-
+            elseif (+$user->dialog === 2) {
+                $bot->saveInst(2, $user->userId);
+                $user->upStatusDialog(0);
+                $kbd = [
+                    'one_time' => false,
+                    'buttons' => [
+                        [
+                            $bot->getBtn(TYPE_TEXT, 'Уточнить установку', COLOR_SECONDARY, CMD_CLARIFY_EFFECT)
+                        ],
+                        [
+                            $bot->getBtn(TYPE_TEXT, 'В начало', COLOR_PRIMARY, CMD_START)
+                        ],
+                    ]
+                ];
+                $bot->send('Установка обрабатывается...', $kbd, $user->userVkId);
                 //обработка текста
                 /* $inst = $bot->getText();
                  $bot->logFile($inst);
@@ -130,9 +147,7 @@ try {
                  ];
                  //$bot->status();
                  $bot->send($msg);*/
-                break;
             }
-            break;
         default:
             $bot->callbackOkResponse();
     }

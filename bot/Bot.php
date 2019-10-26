@@ -2,24 +2,27 @@
 
 namespace bot;
 
+use api\VKApi;
+use Exception;
+
+
 class Bot
 {
     private $msg = '';  //текст сообщения
     private $data = []; //массив полученных данных от сервера
     private $type = ''; //тип входящего сообщения
-    private $secret = ''; //секретный ключ пришедший от сервера
-    private $userVkId = ''; //ID пользователя VK
-    private $userId;
+    private $secret = ''; //секретный ключ пришедший от сервера;
     private $text = ''; //текс входящего сообщения
     private $payload = ''; //дополнительная информация о кнопке
     private $randomID; //Рандомный ID исходящего сообщения
+    private $vkId;
 
     public function __construct()
     {
         $this->data = json_decode(file_get_contents('php://input'), true);
         $this->type = $this->data['type'];
         $this->secret = $this->data['secret'];
-        //$this->myLog($this->data);
+        $this->myLog($this->data);
     }
 
     public function setMsg($msg)
@@ -35,6 +38,11 @@ class Bot
     public function getType()
     {
         return $this->type;
+    }
+
+    public function getVkId()
+    {
+        return $this->vkId;
     }
 
     public function getData($key)
@@ -58,22 +66,20 @@ class Bot
         return $this->secret;
     }
 
-
     public function init()
     {
+        self::dbConnect();
 
         $body = $this->data['object'];
 
         if (!empty($body)) {
-            $this->userVkIdId = abs($body['from_id']) ?? $body['peer_id'];
+            $this->vkId = (abs($body['from_id']) ?? $body['peer_id']);
             $this->text = $body['text'] ?? '';
             $this->payload = $body['payload'] ?? '';
             if ($this->payload) {
                 $this->payload = json_decode($this->payload, true);
             }
         }
-
-        self::dbConnect();
     }
 
     private static function dbConnect()
@@ -88,22 +94,22 @@ class Bot
     public function send($msg, $kbd = [
         'one_time' => false,
         'buttons' => []
-    ], $voice = '', $userVkId = null)
+    ],$vkId, $voice = '')
     {
         $this->randomID = mt_rand(20, 999999999);
-        self::vk()->messages()->send(VK_API_ACCESS_TOKEN, [
-            'peer_id' => $userVkId ?? $this->userVkId,
-            'random_id' => $this->randomID,
-            'attachment' => $voice,
-            'message' => $msg,
-            'keyboard' => json_encode($kbd, JSON_UNESCAPED_UNICODE)
-        ]);
+        try {
+            VKApi::init()->messages()->send(VK_API_ACCESS_TOKEN, [
+                'peer_id' => $vkId,
+                'random_id' => $this->randomID,
+                'attachment' => $voice,
+                'message' => $msg,
+                'keyboard' => json_encode($kbd, JSON_UNESCAPED_UNICODE)
+            ]);
+        } catch (Exception $e) {
+            new Error();
+        }
         $this->callbackOkResponse();
     }
-
-
-
-
 
     /**
      * Сохранение в БД очереди задния на обработку установки
@@ -111,44 +117,15 @@ class Bot
      * @return string
      * @var $inst integer
      */
-    public function saveInst($instType)
+    public function saveInst($instType, $userId)
     {
-        return Db::getInstance()->Query('INSERT INTO `instalation_tbl`(`user_vk_id`, `inst_text`, `type_inst`, `status`) VALUES ( :user_id, :inst_text, :type_inst, :status)',
+        return Db::getInstance()->Query('INSERT INTO `instalation_tbl`(`user_id`, `inst_text`, `type_inst`, `status`) VALUES ( :user_id, :inst_text, :type_inst, :status)',
             [
-                'user_id' => $this->userId,
+                'user_id' => $userId,
                 'inst_text' => $this->text,
                 'type_inst' => $instType,
                 'status' => 1,
             ]);
-    }
-
-    /**
-     * сохранение статуса диалога
-     * по умолчанию метод записывает файл со статусом 0
-     */
-    public function getStatus()
-    {
-        return Db::getInstance()->Select('SELECT `dialog_status` FROM `dialogue_tbl` WHERE id_user = :id_user', [
-            'id_user' => $this->userId,
-        ]);
-
-        /* $status = (int)file_get_contents(STATUS_DIRECTORY . '/' . $this->userId . '.txt');
-        return $status;*/
-    }
-
-    public function setStatus($status)
-    {
-        if (!$this->getStatus()) {
-            return Db::getInstance()->Query('INSERT INTO `dialogue_tbl`(`id_user`, `dialog_status`) VALUES ( :id_user, :dialog_status)', [
-                'id_user' => $this->userId,
-                'dialog_status' => $status,
-            ]);
-        } else {
-            return Db::getInstance()->Query('UPDATE `dialogue_tbl` SET `dialog_status`= :dialog_status WHERE id_user = :id_user', [
-                'dialog_status' => $status,
-                'id_user' => $this->userId,
-            ]);
-        }
     }
 
     public function callbackOkResponse()

@@ -3,6 +3,7 @@
 
 namespace bot;
 
+require_once '../vendor/autoload.php';
 
 use api\VKApi;
 use VK\Exceptions\VKApiException;
@@ -11,33 +12,32 @@ use VK\Exceptions\VKClientException;
 class User
 {
     public $userId;
-    public $userVkId;
+    public $userVkId = 0;
     public $firstName;
     public $lastName;
     public $sex;
+    public $dialog;
 
-    public function init($id)
+    public  function __construct($vkId)
     {
-        self::dbConnect();
+        //self::dbConnect();
 
-        if (!$this->getUserIdVk($id)) {
-            $this->getUserVk($id);
+        if (!$this->getUserIdVk($vkId)) {
+            $this->getUserVk($vkId);
             $this->setUser();
         }
 
-        $user = $this->getUserIdVk($id);
+        $user = $this->getUserIdVk($vkId);
 
         if ($user) {
-            /*   $this->userId = $user[0]['user_id'];
+               $this->userId = $user[0]['user_id'];
                $this->userVkId = $user[0]['user_vk_id'];
                $this->firstName = $user[0]['first_name'];
                $this->lastName = $user[0]['last_name'];
-               $this->sex = $user[0]['user_sex'];*/
+               $this->sex = $user[0]['user_sex'];
+               $this->dialog = $user[0]['dialog_status'];
 
-            echo $user;
         }
-
-        return true;
     }
 
     private static function dbConnect()
@@ -62,11 +62,12 @@ class User
         }
 
         if (!empty($user)) {
-            $this->userVkId = $id;
+            $this->userVkId = $user[0]['id'] ?? $id;
             $this->firstName = $user[0]['first_name'] ?? '';
             $this->lastName = $user[0]['last_name'] ?? '';
-            $this->userSex = $user[0]['sex'] ?? 0;
+            $this->sex = $user[0]['sex'] ?? 0;
         }
+
     }
 
     public function getUserIdVk($id)
@@ -88,8 +89,11 @@ class User
         ]);
     }
 
-
+    public function upStatusDialog(int $status)
+    {
+        return Db::getInstance()->Query('UPDATE `users_tbl` SET `dialog_status`= :status WHERE `user_id` = :user_id',[
+            'status' => $status,
+            'user_id' => $this->userId,
+        ]);
+    }
 }
-
-$t = new User();
-$t->init(502583350);
