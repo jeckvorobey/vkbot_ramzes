@@ -10,7 +10,7 @@ class SendMsg
     private static $bot = null;
     private static $yandexApi = null;
     private $inst_id;
-    private $user_vk_id;
+    private $user_id;
     private $inst_text;
     private $type_inst;
     private $status;

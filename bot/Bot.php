@@ -2,23 +2,14 @@
 
 namespace bot;
 
-use CURLFile;
-use Error;
-use tidy;
-use VK\Client\VKApiClient;
-use VK\Client\Enums\VKLanguage;
-
 class Bot
 {
-    public static $vk = null; //обьект VK API
     private $msg = '';  //текст сообщения
     private $data = []; //массив полученных данных от сервера
     private $type = ''; //тип входящего сообщения
     private $secret = ''; //секретный ключ пришедший от сервера
-    private $userId = ''; //ID пользователя
-    private $firstName = ''; //Имя пользователя
-    private $lastName = ''; //Фамилия пользователя
-    private $userSex = 0; //пол пользователя
+    private $userVkId = ''; //ID пользователя VK
+    private $userId;
     private $text = ''; //текс входящего сообщения
     private $payload = ''; //дополнительная информация о кнопке
     private $randomID; //Рандомный ID исходящего сообщения
@@ -28,29 +19,7 @@ class Bot
         $this->data = json_decode(file_get_contents('php://input'), true);
         $this->type = $this->data['type'];
         $this->secret = $this->data['secret'];
-        $this->myLog($this->data);
-    }
-
-    public function getUserSex()
-    {
-        return Db::getInstance()->Select('SELECT `user_sex` FROM `users_tbl` WHERE user_vk_id = :userId', [
-            'userId' => '502583350', //$this->userId,
-        ]);
-    }
-
-    public function setUserId($userID)
-    {
-        $this->userId = $userID;
-    }
-
-    public function getLastName()
-    {
-        return $this->lastName;
-    }
-
-    public function getFirstName()
-    {
-        return $this->firstName;
+        //$this->myLog($this->data);
     }
 
     public function setMsg($msg)
@@ -73,10 +42,6 @@ class Bot
         return $this->data[$key];
     }
 
-    public function getUserId()
-    {
-        return $this->userId;
-    }
 
     public function getText()
     {
@@ -93,19 +58,14 @@ class Bot
         return $this->secret;
     }
 
-    private static function vk(){
-        if(self::$vk == null){
-            self::$vk = new VKApiClient(VK_API_VERSION, VKLanguage::RUSSIAN);
-        }
-        return self::$vk;
-    }
+
     public function init()
     {
 
         $body = $this->data['object'];
 
         if (!empty($body)) {
-            $this->userId = abs($body['from_id']) ?? $body['peer_id'];
+            $this->userVkIdId = abs($body['from_id']) ?? $body['peer_id'];
             $this->text = $body['text'] ?? '';
             $this->payload = $body['payload'] ?? '';
             if ($this->payload) {
@@ -113,9 +73,7 @@ class Bot
             }
         }
 
-        $this->getUser(); //получает данные пользователя из ВК
         self::dbConnect();
-        $this->setUser();
     }
 
     private static function dbConnect()
@@ -126,36 +84,15 @@ class Bot
     }
 
 
-    public function getConnect()
-    {
-        self::dbConnect();
-    }
-
-    //получает данные пользователя
-    public function getUser()
-    {
-
-        $user = self::vk()->users()->get(VK_API_ACCESS_TOKEN, [
-            'user_ids' => $this->userId,
-            'fields' => 'sex'
-        ]);
-
-        if (!empty($user)) {
-            $this->firstName = $user[0]['first_name'] ?? '';
-            $this->lastName = $user[0]['last_name'] ?? '';
-            $this->userSex = $user[0]['sex'] ?? 0;
-        }
-    }
-
     //отправка сообщения пользователю
     public function send($msg, $kbd = [
         'one_time' => false,
         'buttons' => []
-    ], $voice = '', $userId = null)
+    ], $voice = '', $userVkId = null)
     {
         $this->randomID = mt_rand(20, 999999999);
         self::vk()->messages()->send(VK_API_ACCESS_TOKEN, [
-            'peer_id' => $userId ?? $this->userId,
+            'peer_id' => $userVkId ?? $this->userVkId,
             'random_id' => $this->randomID,
             'attachment' => $voice,
             'message' => $msg,
@@ -164,73 +101,9 @@ class Bot
         $this->callbackOkResponse();
     }
 
-    //Получет адрес сервера для загрузки аудиосообщения
-    public function uploadServer()
-    {
-        $uploadUrl = self::vk()->docs()->getMessagesUploadServer(
-            VK_API_ACCESS_TOKEN,
-            [
-                'type' => 'audio_message',
-                'peer_id' => $this->userId
-            ]
-        );
 
-        return $uploadUrl['upload_url'];
-    }
 
-    //загрузка аудиоответа на сервер VK
-    public function setAudioVk($url, $audioFile)
-    {
-        $ch = curl_init($url);
 
-        curl_setopt($ch, CURLOPT_AUTOREFERER, true);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-        curl_setopt($ch, CURLOPT_HEADER, false);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-type: multipart/form-data;charset=utf-8']);
-
-        if ($audioFile) {
-            $file['file'] = new CURLFile($audioFile, mime_content_type($audioFile), pathinfo($audioFile)['basename']);
-            curl_setopt($ch, CURLOPT_POST, 1);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $file);
-        }
-        $response = curl_exec($ch);
-
-        if (curl_errno($ch)) {
-            new Error();
-        }
-        if (curl_getinfo($ch, CURLINFO_HTTP_CODE) != 200) {
-            new Error();
-        } else {
-            $res = json_decode($response, true);
-            $data = self::vk()->docs()->save(VK_API_ACCESS_TOKEN, [
-                'file' => $res['file'],
-            ]);
-
-            return $data;
-        }
-    }
-
-    public function setUser()
-    {
-        if (!$this->getUserVkId($this->userId)) {
-            return Db::getInstance()->Query('INSERT INTO `users_tbl`(`user_vk_id`, `first_name`, `last_name`, `user_sex`) VALUES (:user_vk_id, :first_name, :last_name, :user_sex)', [
-                'user_vk_id' => $this->userId,
-                'first_name' => $this->firstName,
-                'last_name' => $this->lastName,
-                'user_sex' => $this->userSex,
-            ]);
-        }
-    }
-
-    public function getUserVkId($userVkId)
-    {
-        return Db::getInstance()->Select('SELECT * FROM `users_tbl` WHERE user_vk_id = :userVkId', [
-            'userVkId' => $userVkId,
-        ]);
-    }
 
     /**
      * Сохранение в БД очереди задния на обработку установки
