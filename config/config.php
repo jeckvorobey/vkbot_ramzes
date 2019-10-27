@@ -22,8 +22,9 @@ const OGG = 'audio/ogg';
 /**
  * базовые пути к файлам
  */
+const ROOT = __DIR__;
 const STATUS_DIRECTORY = '../files/status';
-const AUDIO_DIRECTORY = '../files/audio';
+const AUDIO_DIRECTORY = ROOT . '/../files/audio';
 const LOG_DIRECTORY ='../files/logs/user';
 const ERR_LOG_DIRECTORY = '../files/logs/err';
 
@@ -52,7 +53,6 @@ const TEXT_INSTALLATION = 'Проработать установку';
  */
 const CMD_START = 'start';
 const CMD_INSTALLATION = 'inst';
-const CMD_SUB = 'submit';
 const CMD_FLIP = 'flip';
 const CMD_CLARIFY = 'clarify';
 const CMD_CLARIFY_EFFECT = 'clarifyEffect';

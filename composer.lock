@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "c754330f321f19c54bade895bae31aee",
+    "content-hash": "d5b473de9c228510e6cb40fc5a9059f4",
     "packages": [
         {
             "name": "vkcom/vk-php-sdk",
-            "version": "5.100.0",
+            "version": "5.101.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/VKCOM/vk-php-sdk.git",
-                "reference": "4385fa01974bb833b85cd0876d099de8b00fd88b"
+                "reference": "46a8f76503050c0c6730359fc234a4d6448b8653"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/VKCOM/vk-php-sdk/zipball/4385fa01974bb833b85cd0876d099de8b00fd88b",
-                "reference": "4385fa01974bb833b85cd0876d099de8b00fd88b",
+                "url": "https://api.github.com/repos/VKCOM/vk-php-sdk/zipball/46a8f76503050c0c6730359fc234a4d6448b8653",
+                "reference": "46a8f76503050c0c6730359fc234a4d6448b8653",
                 "shasum": ""
             },
             "require": {
@@ -43,22 +43,22 @@
                 "sdk",
                 "vk"
             ],
-            "time": "2019-07-02T08:05:35+00:00"
+            "time": "2019-08-16T12:13:20+00:00"
         }
     ],
     "packages-dev": [
         {
             "name": "squizlabs/php_codesniffer",
-            "version": "3.4.2",
+            "version": "3.5.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/squizlabs/PHP_CodeSniffer.git",
-                "reference": "b8a7362af1cc1aadb5bd36c3defc4dda2cf5f0a8"
+                "reference": "82cd0f854ceca17731d6d019c7098e3755c45060"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/squizlabs/PHP_CodeSniffer/zipball/b8a7362af1cc1aadb5bd36c3defc4dda2cf5f0a8",
-                "reference": "b8a7362af1cc1aadb5bd36c3defc4dda2cf5f0a8",
+                "url": "https://api.github.com/repos/squizlabs/PHP_CodeSniffer/zipball/82cd0f854ceca17731d6d019c7098e3755c45060",
+                "reference": "82cd0f854ceca17731d6d019c7098e3755c45060",
                 "shasum": ""
             },
             "require": {
@@ -96,7 +96,7 @@
                 "phpcs",
                 "standards"
             ],
-            "time": "2019-04-10T23:49:02+00:00"
+            "time": "2019-10-16T21:14:26+00:00"
         }
     ],
     "aliases": [],
@@ -104,6 +104,11 @@
     "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
-    "platform": [],
+    "platform": {
+        "ext-json": "*",
+        "ext-curl": "*",
+        "ext-fileinfo": "*",
+        "ext-pdo": "*"
+    },
     "platform-dev": []
 }

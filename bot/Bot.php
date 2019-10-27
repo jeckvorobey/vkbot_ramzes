@@ -2,49 +2,27 @@
 
 namespace bot;
 
-use CURLFile;
-use Error;
-use tidy;
-use VK\Client\VKApiClient;
-use VK\Client\Enums\VKLanguage;
+use api\Vk;
+use Exception;
+
 
 class Bot
 {
-    public static $vk = ''; //обьект VK API
     private $msg = '';  //текст сообщения
     private $data = []; //массив полученных данных от сервера
     private $type = ''; //тип входящего сообщения
-    private $secret = ''; //секретный ключ пришедший от сервера
-    private $userId = ''; //ID пользователя
-    private $firstName = ''; //Имя пользователя
-    private $lastName = ''; //Фамилия пользователя
-    private $userSex = 0; //пол пользователя
+    private $secret = ''; //секретный ключ пришедший от сервера;
     private $text = ''; //текс входящего сообщения
     private $payload = ''; //дополнительная информация о кнопке
     private $randomID; //Рандомный ID исходящего сообщения
+    private $vkId;
 
     public function __construct()
     {
         $this->data = json_decode(file_get_contents('php://input'), true);
         $this->type = $this->data['type'];
         $this->secret = $this->data['secret'];
-         //$this->myLog($this->data);
-    }
-
-    public function getUserSex()
-    {
-        return $this->userSex;
-    }
-
-
-    public function getLastName()
-    {
-        return $this->lastName;
-    }
-
-    public function getFirstName()
-    {
-        return $this->firstName;
+      //  $this->myLog($this->data);
     }
 
     public function setMsg($msg)
@@ -62,15 +40,16 @@ class Bot
         return $this->type;
     }
 
+    public function getVkId()
+    {
+        return $this->vkId;
+    }
+
     public function getData($key)
     {
         return $this->data[$key];
     }
 
-    public function getUserId()
-    {
-        return $this->userId;
-    }
 
     public function getText()
     {
@@ -89,121 +68,73 @@ class Bot
 
     public function init()
     {
-        self::$vk = new VKApiClient(VK_API_VERSION, VKLanguage::RUSSIAN);
+        self::dbConnect();
 
         $body = $this->data['object'];
 
         if (!empty($body)) {
-            $this->userId = abs($body['from_id']) ?? $body['peer_id'];
+            $this->vkId = (abs($body['from_id']) ?? $body['peer_id']);
             $this->text = $body['text'] ?? '';
             $this->payload = $body['payload'] ?? '';
             if ($this->payload) {
                 $this->payload = json_decode($this->payload, true);
             }
         }
-
-        $this->getUser(); //получает данные пользователя
     }
-    //получает данные пользователя
-    public function getUser()
+
+    private static function dbConnect()
     {
-        $user = self::$vk->users()->get(VK_API_ACCESS_TOKEN, [
-            'user_ids' => $this->userId,
-            'fields' => 'sex'
-        ]);
+        $dbConfig = include __DIR__ . '/../config/dbConfig.php';
 
-        if (!empty($user)) {
-            $this->firstName = $user[0]['first_name'] ?? '';
-            $this->lastName = $user[0]['last_name'] ?? '';
-            $this->userSex = $user[0]['sex'] ?? 0;
-        }
+        Db::getInstance()->Connect($dbConfig['db_user'], $dbConfig['db_password'], $dbConfig['db_base']);
     }
+
+
 
     //отправка сообщения пользователю
     public function send($msg, $kbd = [
         'one_time' => false,
         'buttons' => []
-    ], $voice = '')
+    ],$vkId, $voice = '')
     {
         $this->randomID = mt_rand(20, 999999999);
-        self::$vk->messages()->send(VK_API_ACCESS_TOKEN, [
-            'peer_id' => $this->userId,
-            'random_id' => $this->randomID,
-            'attachment' => $voice,
-            'message' => $msg,
-            'keyboard' => json_encode($kbd, JSON_UNESCAPED_UNICODE)
-        ]);
-        $this->callbackOkResponse();
-    }
-    //Получет адрес сервера для загрузки аудиосообщения
-    public function uploadServer()
-    {
-        $uploadUrl = self::$vk->docs()->getMessagesUploadServer(
-            VK_API_ACCESS_TOKEN,
-            [
-                'type' => 'audio_message',
-                'peer_id' => $this->userId
-            ]
-        );
-
-        return $uploadUrl['upload_url'];
-    }
-
-    //загрузка аудиоответа на сервер VK
-    public function setAudioVk($url, $audioFile)
-    {
-        $ch = curl_init($url);
-
-        curl_setopt($ch, CURLOPT_AUTOREFERER, true);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-        curl_setopt($ch, CURLOPT_HEADER, false);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-type: multipart/form-data;charset=utf-8']);
-
-        if ($audioFile) {
-            $file['file'] = new CURLFile($audioFile, mime_content_type($audioFile), pathinfo($audioFile)['basename']);
-            curl_setopt($ch, CURLOPT_POST, 1);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $file);
-        }
-        $response = curl_exec($ch);
-
-        if (curl_errno($ch)) {
-            new Error();
-        }
-        if (curl_getinfo($ch, CURLINFO_HTTP_CODE) != 200) {
-            new Error();
-        } else {
-            $res = json_decode($response, true);
-            $data = self::$vk->docs()->save(VK_API_ACCESS_TOKEN, [
-                'file' => $res['file'],
+        try {
+            Vk::init()->messages()->send(VK_API_ACCESS_TOKEN, [
+                'peer_id' => $vkId,
+                'random_id' => $this->randomID,
+                'attachment' => $voice,
+                'message' => $msg,
+                'keyboard' => json_encode($kbd, JSON_UNESCAPED_UNICODE)
             ]);
-            return $data;
+        } catch (Exception $e) {
+            new Error();
         }
+        $this->callbackOkResponse();
     }
 
     /**
-     * сохранение статуса диалога
-     * по умолчанию метод записывает файл со статусом 0
-     * @string 'put' записывает файл
-     * @string 'get' получает статус
-     * @param string $method
-     * @param int $status
-     * @return bool|int
+     * Сохранение в БД очереди задния на обработку установки
+     *
+     * @return string
+     * @var $inst integer
      */
-    public function status($method = 'put', $status = 0)
+    public function saveInst($instType, $userId)
     {
-        if ($method === 'get') {
-            $status = (int) file_get_contents(STATUS_DIRECTORY . '/' . $this->userId . '.txt');
-            return $status;
-        }
-
-        if ($method === 'put') {
-            return file_put_contents(STATUS_DIRECTORY . '/' . $this->userId . '.txt', $status);
-        }
+        return Db::getInstance()->Query('INSERT INTO `instalation_tbl`(`user_id`, `inst_text`, `type_inst`, `status`) VALUES ( :user_id, :inst_text, :type_inst, :status)',
+            [
+                'user_id' => $userId,
+                'inst_text' => $this->text,
+                'type_inst' => $instType,
+                'status' => 1,
+            ]);
     }
 
+    public function upInstStatus($instId, $status){
+        return Db::getInstance()->Query('UPDATE `instalation_tbl` SET `status`= :status WHERE `inst_id` = :user_id', [
+            'status' => $status,
+            'user_id' => $instId
+        ]);
+    }
 
     public function callbackOkResponse()
     {
