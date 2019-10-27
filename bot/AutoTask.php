@@ -19,7 +19,7 @@ class AutoTask
         if (!empty($this->data)) {
             self::$sendMsg->setData($this->data);
         } else {
-            echo 'Пусто';
+            die();
         }
     }
 }
