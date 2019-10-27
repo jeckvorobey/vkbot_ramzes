@@ -38,7 +38,8 @@ try {
 
         case CALLBACK_API_EVENT_MESSAGE_NEW:
             $bot->init();
-            $user = new User($bot->getVkId());
+            $user = new User();
+            $user->initVk($bot->getVkId());
             //Если команда "Начать"
             if ($bot->getText() === TEXT_START || $bot->getPayload() === CMD_START) {
                 $msg = $text['welcome_messages'];
@@ -70,12 +71,6 @@ try {
                     'one_time' => false,
                     'buttons' => [
                         [
-                            $bot->getBtn(TYPE_TEXT, 'Уточнить установку', COLOR_SECONDARY, CMD_CLARIFY)
-                        ],
-                        [
-                            $bot->getBtn(TYPE_TEXT, 'Перевернуть установку', COLOR_POSITIVE, CMD_FLIP)
-                        ],
-                        [
                             $bot->getBtn(TYPE_TEXT, 'В начало', COLOR_PRIMARY, CMD_START)
                         ],
                     ]
@@ -99,55 +94,13 @@ try {
                     'one_time' => false,
                     'buttons' => [
                         [
-                            $bot->getBtn(TYPE_TEXT, 'Уточнить установку', COLOR_SECONDARY, CMD_CLARIFY_EFFECT)
-                        ],
-                        [
                             $bot->getBtn(TYPE_TEXT, 'В начало', COLOR_PRIMARY, CMD_START)
                         ],
                     ]
                 ];
                 $bot->send('Установка обрабатывается...', $kbd, $user->userVkId);
-                //обработка текста
-                /* $inst = $bot->getText();
-                 $bot->logFile($inst);
-                 $trans = '1textchange1';
-                 $forSpeechText = str_replace($trans, str_replace(' ', ' - ', $inst), $text['res_to_effective_installation']);
-                 $msg = str_replace('- ', '', $forSpeechText);
-                 //создание аудио ответа
-                 $file = $yandexApi->getVoice($forSpeechText);
-                 $url = $bot->uploadServer();
-                 $voice = $bot->setAudioVk($url, $file);
-                 $voice = 'doc' . $voice['audio_message']['owner_id'] . '_' . $voice['audio_message']['id'] . '_' . $voice['audio_message']['access_key'];
-
-                 $kbd = [
-                     'one_time' => false,
-                     'buttons' => [
-                         [
-                             $bot->getBtn(TYPE_TEXT, 'Следующая установка', COLOR_POSITIVE, CMD_INSTALLATION)
-                         ],
-                         [
-                             $bot->getBtn(TYPE_TEXT, 'Уточнить установку', COLOR_SECONDARY, CMD_CLARIFY_EFFECT)
-                         ],
-                         [
-                             $bot->getBtn(TYPE_TEXT, 'Вернуться в начало', COLOR_PRIMARY, CMD_START)
-                         ]
-                     ]
-                 ];
-                 $bot->status();
-                 $bot->send($msg, $kbd, $voice);
-             } else {
-                 $msg = '';
-                 $kbd = [
-                     'one_time' => false,
-                     'buttons' => [
-                         [
-                             $bot->getBtn(TYPE_TEXT, 'В начало', COLOR_PRIMARY, CMD_START)
-                         ],
-                     ]
-                 ];
-                 //$bot->status();
-                 $bot->send($msg);*/
             }
+            break;
         default:
             $bot->callbackOkResponse();
     }

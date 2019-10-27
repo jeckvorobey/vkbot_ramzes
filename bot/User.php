@@ -3,9 +3,8 @@
 
 namespace bot;
 
-require_once '../vendor/autoload.php';
 
-use api\VKApi;
+use api\Vk;
 use VK\Exceptions\VKApiException;
 use VK\Exceptions\VKClientException;
 
@@ -18,7 +17,22 @@ class User
     public $sex;
     public $dialog;
 
-    public  function __construct($vkId)
+    public function init($userId)
+    {
+        $user = $this->getUser($userId);
+
+        if ($user) {
+            $this->userId = $user[0]['user_id'];
+            $this->userVkId = $user[0]['user_vk_id'];
+            $this->firstName = $user[0]['first_name'];
+            $this->lastName = $user[0]['last_name'];
+            $this->sex = $user[0]['user_sex'];
+            $this->dialog = $user[0]['dialog_status'];
+
+        }
+    }
+
+    public function initVk($vkId)
     {
         //self::dbConnect();
 
@@ -30,12 +44,12 @@ class User
         $user = $this->getUserIdVk($vkId);
 
         if ($user) {
-               $this->userId = $user[0]['user_id'];
-               $this->userVkId = $user[0]['user_vk_id'];
-               $this->firstName = $user[0]['first_name'];
-               $this->lastName = $user[0]['last_name'];
-               $this->sex = $user[0]['user_sex'];
-               $this->dialog = $user[0]['dialog_status'];
+            $this->userId = $user[0]['user_id'];
+            $this->userVkId = $user[0]['user_vk_id'];
+            $this->firstName = $user[0]['first_name'];
+            $this->lastName = $user[0]['last_name'];
+            $this->sex = $user[0]['user_sex'];
+            $this->dialog = $user[0]['dialog_status'];
 
         }
     }
@@ -51,7 +65,7 @@ class User
     public function getUserVk($id)
     {
         try {
-            $user = VKApi::init()->users()->get(VK_API_ACCESS_TOKEN, [
+            $user = Vk::init()->users()->get(VK_API_ACCESS_TOKEN, [
                 'user_ids' => $id,
                 'fields' => 'sex'
             ]);
@@ -68,6 +82,13 @@ class User
             $this->sex = $user[0]['sex'] ?? 0;
         }
 
+    }
+
+    public function getUser($userId)
+    {
+        return Db::getInstance()->Select('SELECT * FROM `users_tbl` WHERE `user_id` = :id', [
+            'id' => $userId,
+        ]);
     }
 
     public function getUserIdVk($id)
@@ -91,7 +112,7 @@ class User
 
     public function upStatusDialog(int $status)
     {
-        return Db::getInstance()->Query('UPDATE `users_tbl` SET `dialog_status`= :status WHERE `user_id` = :user_id',[
+        return Db::getInstance()->Query('UPDATE `users_tbl` SET `dialog_status`= :status WHERE `user_id` = :user_id', [
             'status' => $status,
             'user_id' => $this->userId,
         ]);

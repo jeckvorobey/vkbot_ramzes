@@ -2,11 +2,13 @@
 
 namespace api;
 
+use bot\Error;
+
 class YandexApi
 {
     public function getVoice($text)
     {
-        echo AUDIO_DIRECTORY;
+
         $audioFile = AUDIO_DIRECTORY . '/voice_' . md5($text) . '.ogg';
         if (file_exists($audioFile)) {
             return $audioFile;
@@ -40,25 +42,15 @@ class YandexApi
 
         $response = curl_exec($ch);
         if (curl_errno($ch)) {
-            $this->myLog("Error: " . curl_error($ch));
+            new Error();
         }
         if (curl_getinfo($ch, CURLINFO_HTTP_CODE) != 200) {
-            $decodedResponse = json_decode($response, true);
-            $this->myLog("Error code: " . $decodedResponse["error_code"] . "\r\n");
-            $this->myLog("Error message: " . $decodedResponse["error_message"] . "\r\n");
+            new Error();
         } else {
-            file_put_contents(  AUDIO_DIRECTORY . '/voice_' . md5($text) . '.ogg', $response);
-            return $audioFile =  AUDIO_DIRECTORY . '/voice_' . md5($text) . '.ogg';
+            file_put_contents( AUDIO_DIRECTORY . '/voice_' . md5($text) . '.ogg', $response);
+            return $audioFile = AUDIO_DIRECTORY . '/voice_' . md5($text) . '.ogg';
         }
         curl_close($ch);
     }
 
-
-    public function myLog($str)
-    {
-        if (is_array($str)) {
-            $str = json_encode($str, JSON_UNESCAPED_UNICODE);
-        }
-        file_put_contents("php://stdout", "$str\n");
-    }
 }

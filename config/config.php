@@ -22,8 +22,9 @@ const OGG = 'audio/ogg';
 /**
  * базовые пути к файлам
  */
+const ROOT = __DIR__;
 const STATUS_DIRECTORY = '../files/status';
-const AUDIO_DIRECTORY = '../files/audio';
+const AUDIO_DIRECTORY = ROOT . '/../files/audio';
 const LOG_DIRECTORY ='../files/logs/user';
 const ERR_LOG_DIRECTORY = '../files/logs/err';
 

@@ -11,16 +11,18 @@ use VK\Exceptions\Api\VKApiSaveFileException;
 use VK\Exceptions\VKApiException;
 use VK\Exceptions\VKClientException;
 
-class VKApi
+class Vk
 {
     private static $vk = null;
+
+    public function __construct()
+    {
+    }
 
     /*
     * Запрещаем копировать объект
     */
-    private function __construct()
-    {
-    }
+
 
     private function __sleep()
     {
@@ -46,14 +48,14 @@ class VKApi
     }
 
     //Получет адрес сервера для загрузки аудиосообщения
-    public function uploadServer()
+    public function uploadServer($userVkId)
     {
         try {
             $uploadUrl = self::init()->docs()->getMessagesUploadServer(
                 VK_API_ACCESS_TOKEN,
                 [
                     'type' => 'audio_message',
-                    'peer_id' => $this->userId
+                    'peer_id' => $userVkId
                 ]
             );
         } catch (VKApiMessagesDenySendException $e) {

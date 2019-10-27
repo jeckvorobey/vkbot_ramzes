@@ -2,7 +2,7 @@
 
 namespace bot;
 
-use api\VKApi;
+use api\Vk;
 use Exception;
 
 
@@ -22,7 +22,7 @@ class Bot
         $this->data = json_decode(file_get_contents('php://input'), true);
         $this->type = $this->data['type'];
         $this->secret = $this->data['secret'];
-        $this->myLog($this->data);
+      //  $this->myLog($this->data);
     }
 
     public function setMsg($msg)
@@ -90,6 +90,7 @@ class Bot
     }
 
 
+
     //отправка сообщения пользователю
     public function send($msg, $kbd = [
         'one_time' => false,
@@ -98,7 +99,7 @@ class Bot
     {
         $this->randomID = mt_rand(20, 999999999);
         try {
-            VKApi::init()->messages()->send(VK_API_ACCESS_TOKEN, [
+            Vk::init()->messages()->send(VK_API_ACCESS_TOKEN, [
                 'peer_id' => $vkId,
                 'random_id' => $this->randomID,
                 'attachment' => $voice,
@@ -126,6 +127,13 @@ class Bot
                 'type_inst' => $instType,
                 'status' => 1,
             ]);
+    }
+
+    public function upInstStatus($instId, $status){
+        return Db::getInstance()->Query('UPDATE `instalation_tbl` SET `status`= :status WHERE `inst_id` = :user_id', [
+            'status' => $status,
+            'user_id' => $instId
+        ]);
     }
 
     public function callbackOkResponse()
