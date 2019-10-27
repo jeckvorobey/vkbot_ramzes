@@ -24,5 +24,4 @@ class AutoTask
     }
 }
 
-$t = new AutoTask();
-$t->init();
+(new AutoTask)->init();

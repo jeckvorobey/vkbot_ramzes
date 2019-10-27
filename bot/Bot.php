@@ -92,10 +92,7 @@ class Bot
 
 
     //отправка сообщения пользователю
-    public function send($msg, $kbd = [
-        'one_time' => false,
-        'buttons' => []
-    ],$vkId, $voice = '')
+    public function send($msg, $kbd, $vkId, $voice = '')
     {
         $this->randomID = mt_rand(20, 999999999);
         try {

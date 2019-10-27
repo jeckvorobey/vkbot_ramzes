@@ -68,12 +68,8 @@ try {
                 $user->upStatusDialog(0);
 
                 $kbd = [
-                    'one_time' => false,
-                    'buttons' => [
-                        [
-                            $bot->getBtn(TYPE_TEXT, 'В начало', COLOR_PRIMARY, CMD_START)
-                        ],
-                    ]
+                    'one_time' => true,
+                    'buttons' => []
                 ];
 
                 $bot->send('Установка обрабатывается...', $kbd, $user->userVkId);
@@ -90,14 +86,12 @@ try {
             elseif (+$user->dialog === 2) {
                 $bot->saveInst(2, $user->userId);
                 $user->upStatusDialog(0);
+
                 $kbd = [
-                    'one_time' => false,
-                    'buttons' => [
-                        [
-                            $bot->getBtn(TYPE_TEXT, 'В начало', COLOR_PRIMARY, CMD_START)
-                        ],
-                    ]
+                    'one_time' => true,
+                    'buttons' => []
                 ];
+
                 $bot->send('Установка обрабатывается...', $kbd, $user->userVkId);
             }
             break;
